@@ -445,7 +445,6 @@ def cart():
     # Filter movements to include only unique product names
     unique_movements = {}
     for movement in movements:
-        print(movement.price)
         if movement.product_id not in unique_movements:
             unique_movements[movement.product_id] = movement
 
