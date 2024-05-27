@@ -20,8 +20,10 @@
                 <form action="/update-product/{{product.product_id}}" method="POST" id="product_form">
                     <label for="product_name" class="col-form-label">Product Name</label>
                     <input type="text" name="product_name" id="product_name" value="{{product.product_id}}">
-                    <label for="product_name" class="col-form-label">Product Price</label>
+                    <label for="product_name" class="col-form-label">Product Sell Price</label>
                     <input type="text" name="product_price" id="product_price" value="{{product.price}}">
+                    <label for="product_name" class="col-form-label">Product Purchase Price</label>
+                    <input type="text" name="product_price" id="purchase_price" value="{{product.purchase_price}}">
                     <br>
                     <input id="submitProduct" value="Update" class="btn btn-primary">
                 </form>

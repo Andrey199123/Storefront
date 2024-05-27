@@ -35,7 +35,8 @@ $(document).ready(function() {
       $.ajax({
         data: {
           product_name: $("#product_name").val(),
-          product_price: $("#product_price").val()
+          product_price: $("#product_price").val(),
+          purchase_price: $("#purchase_price").val()
         },
         type: "POST",
         url: "/dup-products/",
@@ -52,14 +53,14 @@ $(document).ready(function() {
     $("#product_form").submit(function (e) {
         if (!$("#product_name").val()) {
           e.preventDefault();
-          alert("Please fill the Prodcut first");
+          alert("Please fill the Product first");
         }
     });
 
     $("#movements_from").submit(function (e) {
         var msg = ''
         if ($("#qty").val() && $("#qty").val() <=0 ){
-            msg += "Please add postive number";
+            msg += "Please add positive number";
         }
 
         if (!$("#productId").val() || !$("#qty").val()) {

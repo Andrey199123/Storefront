@@ -24,6 +24,12 @@ if not os.path.exists('location.pkl'):
 
 app = Flask(__name__)
 
+
+# Remove customer and remove location when display options to add a new movement
+def remove_specific_locations(locations, names_to_remove):
+    return [location for location in locations if location.location_id not in names_to_remove]
+
+
 # Read ID counter
 def read_counter(filename):
     try:
@@ -55,11 +61,12 @@ def load_from_pkl(filename):
 
 
 class Product:
-    def __init__(self, product_id, price):
+    def __init__(self, product_id, price, purchase_price):
         self.product_id = product_id
         self.date_created = datetime.now().astimezone(pytz.timezone('America/New_York')).strftime("%A, %B %d, %Y "
-                                                                                                  "%I:%M %p")
+                                                                             "%I:%M %p")
         self.price = price
+        self.purchase_price = purchase_price
 
     def __repr__(self):
         return f'<Product {self.product_id}>'
@@ -120,7 +127,8 @@ def index():
         except Exception as e:
             return f"There Was an issue while add a new Location + {e}"
     else:
-        return render_template("index.html", products=load_from_pkl(product_file), locations=load_from_pkl(location_file))
+        return render_template("index.html", products=load_from_pkl(product_file),
+                               locations=load_from_pkl(location_file))
 
 
 @app.route('/locations/', methods=["POST", "GET"])
@@ -148,7 +156,8 @@ def viewProduct():
     if (request.method == "POST") and ('product_name' in request.form):
         product_name = request.form["product_name"]
         product_price = request.form["product_price"]
-        new_product = Product(product_id=product_name, price=product_price)
+        purchase_price = request.form["purchase_price"]
+        new_product = Product(product_id=product_name, price=product_price, purchase_price=purchase_price)
 
         try:
             products = load_from_pkl(product_file)
@@ -175,8 +184,10 @@ def updateProduct(name):
     if request.method == "POST":
         new_product_id = request.form['product_name']
         new_price = request.form['product_price']
+        new_purchase_price = request.form['purchase_price']
         product.product_id = new_product_id
         product.price = new_price
+        product.purchase_price = new_purchase_price
 
         try:
             save_to_pkl(products, product_file)
@@ -185,7 +196,7 @@ def updateProduct(name):
         except Exception as e:
             return f"There was an issue while updating the Product: {str(e)}"
     else:
-        return render_template("update-product.html", product=product, price=product.price)
+        return render_template("update-product.html", product=product, price=product.price, purhcase_price=product.purchase_price)
 
 
 @app.route("/delete-product/<name>")
@@ -281,13 +292,9 @@ def viewMovements():
         except Exception as e:
             return f"There was an issue while adding a new Movement: {str(e)}"
     else:
-        try:
-            products = load_from_pkl(product_file)
-            locations = load_from_pkl(location_file)
-            movements = load_from_pkl(movement_file)
-            return render_template("movements.html", movements=movements, products=products, locations=locations)
-        except Exception as e:
-            return f"There was an issue while loading the data: {str(e)}"
+        products = load_from_pkl(product_file)
+        movements = load_from_pkl(movement_file)
+        return render_template("movements.html", movements=movements, products=products, locations=remove_specific_locations(load_from_pkl(location_file), ["Customer"]))
 
 
 @app.route("/update-movement/<int:id>", methods=["POST", "GET"])
@@ -383,25 +390,23 @@ def revenueReport():
             for product in products:
                 if mov.product_id == product.product_id:  # Checks if product was bought by customer
                     products_dict[product] = mov.qty
-                    revenue += float(product.price) * mov.qty
-    return render_template("revenue-report.html", revenue_data=round(revenue, 2), products=products_dict)
+                    revenue += (float(product.price) - float(product.purchase_price)) * int(mov.qty)
+    return render_template("revenue-report.html", revenue_data="{:.2f}".format(revenue), products=products_dict)
 
 
-@app.route("/movements/get-from-locations/", methods=["POST"])
+@app.route("/movements/get-from-locations", methods=["POST"])
 def getLocations():
     product = request.form["productId"]
-    locationDict = defaultdict(lambda: defaultdict(int))
-    try:
-        movements = load_from_pkl(movement_file)
-        filtered_movements = filter(lambda m: m.product_id == product and m.to_location != '', movements)
-        for mov in filtered_movements:
-            if locationDict[mov.to_location] and "qty" in locationDict[mov.to_location]:
-                locationDict[mov.to_location]["qty"] += mov.qty
-            else:
-                locationDict[mov.to_location]["qty"] = mov.qty
-        return locationDict
-    except Exception as e:
-        return f"There was an issue while processing the data: {str(e)}"
+    locationDict = defaultdict(int)  # Use a single dictionary for quantities
+
+    movements = load_from_pkl(movement_file)
+    for mov in movements:
+        if mov.product_id == product:
+            locationDict[mov.from_location] += mov.qty
+
+    # Filter out "Customer" and "remove"
+    filtered_locations = {loc: qty for loc, qty in locationDict.items() if loc not in ["Customer", "Remove"]}
+    return filtered_locations
 
 
 @app.route("/dup-locations/", methods=["POST", "GET"])
@@ -433,10 +438,11 @@ def getPDuplicate():
     """Checks if there are any duplicate product names when updating product as input validation"""
     product_name = request.form["product_name"]
     product_price = request.form["product_price"]
+    purchase_price = request.form["purchase_price"]
     products = load_from_pkl(product_file)
     duplicate = any(prod.product_id == product_name for prod in products)
 
-    return {"output": ((not duplicate) and is_valid_price(product_price))}
+    return {"output": ((not duplicate) and is_valid_price(product_price) and is_valid_price(purchase_price))}
 
 
 @app.route("/cart", methods=["POST", "GET"])
@@ -468,7 +474,6 @@ def checkout():
         for mov_data in movements_data:
             product_id = mov_data['productId']
             qty = int(mov_data['quantity'])
-            print(qty)
 
             # Find the movement with the largest quantity for this product
             from_movement = max(
@@ -536,5 +541,8 @@ if __name__ == "__main__":
     if 'Customer' not in [loc.location_id for loc in locations]:
         customer = Location(location_id='Customer')  # Customer is treated as a location
         locations.append(customer)
-        save_to_pkl(locations, location_file)
+    if 'Remove' not in [loc.location_id for loc in locations]:
+        remove = Location(location_id='Remove')  # Option to remove inventory
+        locations.append(remove)
+    save_to_pkl(locations, location_file)
     app.run(debug=True)

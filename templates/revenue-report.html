@@ -28,7 +28,8 @@
                             <tr>
                                 <th>Product Name</th>
                                 <th>Quantity Sold</th>
-                                <th>Price ($)</th>
+                                <th>Sell Price ($)</th>
+                                <th>Purchase Price ($)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -37,6 +38,7 @@
                                 <td>{{ product.product_id }}</td>
                                 <td>{{ qty_sold }}</td>
                                 <td>{{ product.price }}</td>
+                                <td>{{ product.purchase_price }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

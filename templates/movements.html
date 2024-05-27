@@ -29,7 +29,6 @@
                                             <option selected value="">Choose...</option>
                                             {% if products|length > 0 %}
                                             {% for product in products%}
-                                            <!-- <option value="{{product.product_id}}">{{product.product_name}}</option> -->
                                             <option value="{{product.product_id}}">{{product.product_id}}</option>
                                             {% endfor %}
                                             {% endif %}
@@ -48,24 +47,18 @@
                                     <label for="fromLocation">From</label>
                                     <select id="fromLocation" class="form-control" name="fromLocation">
                                         <option selected value="">Choose...</option>
-                                        {# 
-                                        {% if locations|length > 0 %}
                                         {% for location in locations%}
                                         <option value="{{location.location_id}}">{{location.location_id}}</option>
                                         {% endfor %}
-                                        {% endif %}
-                                        #}
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="toLocation">TO</label>
+                                    <label for="toLocation">To</label>
                                     <select id="toLocation" name="toLocation" class="form-control">
                                         <option selected value="">Choose...</option>
-                                        {% if locations|length > 0 %}
                                         {% for location in locations%}
                                         <option value="{{location.location_id}}">{{location.location_id}}</option>
                                         {% endfor %}
-                                        {% endif %}
                                     </select>
                                 </div>
                             </div>
@@ -76,42 +69,46 @@
                     </div>
                 </div>
                 <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-table mr-1"></i>
-                    Movements Table
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        {% if movements|length < 1 %}
-                        <h4>There are no Movements, add one above</h4>
-                        {% else %}
-                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Product Name</th>
-                                    <th>Quantity</th>
-                                    <th>From</th>
-                                    <th>To</th>
-                                    <th>Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for movement in movements%}
-                                <tr>
-                                    <td>{{ movement.movement_id }}</td>
-                                    <td>{{ movement.product_id }}</td>
-                                    <td>{{ movement.qty }}</td>
-                                    <td>{{ movement.from_location }}</td>
-                                    <td>{{ movement.to_location }}</td>
-                                    <td>{{ movement.movement_time }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% endif %}
-                </div>
-            </div>
+                    <div class="card-header">
+                        <i class="fas fa-table mr-1"></i>
+                        Movements Table
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            {% if movements|length < 1 %}
+                            <h4>There are no Movements, add one above</h4>
+                            {% else %}
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Product Name</th>
+                                        <th>Quantity</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for movement in movements%}
+                                    <tr>
+                                        <td>{{ movement.movement_id }}</td>
+                                        <td>{{ movement.product_id }}</td>
+                                        <td>{{ movement.qty }}</td>
+                                        <td>{{ movement.from_location }}</td>
+                                        <td>{{ movement.to_location }}</td>
+                                        <td>{{ movement.movement_time }}</td>
+                                        <td>
+                                            <a href="/update-movement/{{ movement.movement_id }}">Update</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
