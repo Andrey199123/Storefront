@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-<title>Andrey's Storefront Project</title>
+<title>StoreSync</title>
 {% endblock %}
 
 
@@ -9,9 +9,17 @@
 <main>
     <div class="container-fluid">
         <h1 class="mt-4">Dashboard</h1>
-        <ol class="breadcrumb mb-4">
-            <li class="breadcrumb-item active">Dashboard</li>
-        </ol>
+        <div class="card-header">AI Chatbot</div>
+        <div class="card-body">
+            <form action="/chat/" method="POST" id="chat_form">
+                <input type="text" name="enter_chat" id="enter_chat" required>
+                <button id="submitChat" type="submit" class="btn btn-secondary btn-floating mx-1">Submit Prompt</button>
+            </form>
+            <br>
+            <github-md>
+                {{ response }}
+            </github-md>
+        </div>
         <div class="card mb-4">
             <div class="card-header">Products</div>
             <div class="card-body">
@@ -95,5 +103,27 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/gh/MarketingPipeline/Markdown-Tag/markdown-tag.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#submitChat').click(function(e) {
+                e.preventDefault();
+                var form = $('#chat_form');
+                var formData = form.serialize();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/chat',
+                    data: formData,
+                    success: function(response) {
+                        $('#chat_response').text(response.response);
+                    },
+                    error: function() {
+                        $('#chat_response').text('An error occurred');
+                    }
+                });
+            });
+        });
+    </script>
 </main>
 {% endblock %}

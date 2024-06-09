@@ -1,3 +1,4 @@
+import markdown
 from flask import Flask, render_template, request, redirect, jsonify, flash
 from collections import defaultdict
 import pickle
@@ -6,6 +7,7 @@ import os
 import re
 import pytz
 from werkzeug.security import check_password_hash, generate_password_hash
+import subprocess
 
 users_file = 'users.pkl'
 product_file = 'product.pkl'
@@ -72,7 +74,7 @@ class Product:
     def __init__(self, product_id, price, purchase_price):
         self.product_id = product_id
         self.date_created = datetime.now().astimezone(pytz.timezone('America/New_York')).strftime("%A, %B %d, %Y "
-                                                                             "%I:%M %p")
+                                                                                                  "%I:%M %p")
         self.price = price
         self.purchase_price = purchase_price
 
@@ -176,6 +178,34 @@ def index():
                                locations=load_from_pkl(location_file))
 
 
+@app.route('/chat/', methods=["POST", "GET"])
+def chat():
+    user_input = request.form.get('enter_chat')
+
+    if user_input:
+        try:
+            # Construct the shell command (ollama and phi3 must be installed on hosting server)
+            shell_command = f"echo {user_input} | /usr/local/bin/ollama run phi3"
+
+            # Execute the shell command
+            process = subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
+
+            # Kill Ollama server
+            subprocess.Popen("pkill -f ollama", shell=True)
+            subprocess.Popen("pkill -f Ollama", shell=True)
+
+            # Get the response
+            response = stdout.decode('utf-8') if stdout else stderr.decode('utf-8')
+            response = re.sub(r'\n', '', response)
+        except Exception as e:
+            response = str(e)
+    else:
+        response = "No input provided"
+
+    return render_template("index.html", response=response)
+
+
 @app.route('/locations/', methods=["POST", "GET"])
 def viewLocation():
     if (request.method == "POST") and ('location_name' in request.form):
@@ -241,7 +271,8 @@ def updateProduct(name):
         except Exception as e:
             return f"There was an issue while updating the Product: {str(e)}"
     else:
-        return render_template("update-product.html", product=product, price=product.price, purhcase_price=product.purchase_price)
+        return render_template("update-product.html", product=product, price=product.price,
+                               purhcase_price=product.purchase_price)
 
 
 @app.route("/delete-product/<name>")
@@ -339,7 +370,8 @@ def viewMovements():
     else:
         products = load_from_pkl(product_file)
         movements = load_from_pkl(movement_file)
-        return render_template("movements.html", movements=movements, products=products, locations=remove_specific_locations(load_from_pkl(location_file), ["Customer"]))
+        return render_template("movements.html", movements=movements, products=products,
+                               locations=remove_specific_locations(load_from_pkl(location_file), ["Customer"]))
 
 
 @app.route("/update-movement/<int:id>", methods=["POST", "GET"])
