@@ -1,19 +1,23 @@
-# Andrey Vasilyev 5/17/24
-from flask import Flask, render_template, request, redirect, jsonify
+from flask import Flask, render_template, request, redirect, jsonify, flash
 from collections import defaultdict
 import pickle
 from datetime import datetime
 import os
 import re
 import pytz
+from werkzeug.security import check_password_hash, generate_password_hash
 
+users_file = 'users.pkl'
 product_file = 'product.pkl'
 location_file = 'location.pkl'
 movement_file = 'movement.pkl'
 counter_file = 'counter.txt'  # File for creating IDs
 
-if not os.path.exists('movement.pkl'):
+if not os.path.exists('users.pkl'):
     # Create the file if it doesn't exist
+    open('users.pkl', 'wb').close()
+
+if not os.path.exists('movement.pkl'):
     open('movement.pkl', 'wb').close()
 
 if not os.path.exists('product.pkl'):
@@ -22,7 +26,11 @@ if not os.path.exists('product.pkl'):
 if not os.path.exists('location.pkl'):
     open('location.pkl', 'wb').close()
 
+if not os.path.exists('counter.txt'):
+    open('counter.txt', 'wb').close()
+
 app = Flask(__name__)
+app.secret_key = 'gJwlRqBv959595'
 
 
 # Remove customer and remove location when display options to add a new movement
@@ -97,7 +105,44 @@ class Movement:
         return f'<Movement {self.movement_id}>'
 
 
-@app.route('/', methods=["POST", "GET"])
+@app.route('/', methods=['GET', 'POST'])
+def login_register():
+    if request.method == 'POST':
+        form_type = request.form['form_type']
+        if form_type == 'login':
+            username_or_email = request.form['username_or_email']
+            password = request.form['password']
+            users = load_from_pkl(users_file)
+            user = next((u for u in users if u['username'] == username_or_email or u['email'] == username_or_email),
+                        None)
+
+            if user and check_password_hash(user['password'], password):
+                flash('Login successful')
+                return redirect('/home')
+            else:
+                flash('Invalid username/email or password')
+        elif form_type == 'register':
+            name = request.form['name']
+            username = request.form['username']
+            email = request.form['email']
+            password = request.form['password']
+            users = load_from_pkl(users_file)
+
+            if any(u['username'] == username for u in users):
+                flash('Username already exists')
+            elif any(u['email'] == email for u in users):
+                flash('Email already exists')
+            else:
+                hashed_password = generate_password_hash(password)
+                users.append({'name': name, 'username': username, 'email': email, 'password': hashed_password})
+                save_to_pkl(users, users_file)
+                flash('Registration successful. Please login.')
+                return redirect('/')
+
+    return render_template('login.html')
+
+
+@app.route('/home', methods=["POST", "GET"])
 def index():
     # add new product
     if (request.method == "POST") and ('product_name' in request.form):
@@ -108,7 +153,7 @@ def index():
             products = load_from_pkl(product_file)
             products.append(new_product)
             save_to_pkl(products, product_file)
-            return redirect("/")
+            return redirect("/home")
 
         except Exception as e:
             return f"There Was an issue while add a new Product + {e}"
@@ -122,7 +167,7 @@ def index():
             locations = load_from_pkl(location_file)
             locations.append(new_location)
             save_to_pkl(locations, location_file)
-            return redirect("/")
+            return redirect("/home")
 
         except Exception as e:
             return f"There Was an issue while add a new Location + {e}"

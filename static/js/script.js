@@ -57,7 +57,7 @@ $(document).ready(function() {
         }
     });
 
-    $("#movements_from").submit(function (e) {
+    $("#movements_form").submit(function (e) {
         var msg = ''
         if ($("#qty").val() && $("#qty").val() <=0 ){
             msg += "Please add positive number";

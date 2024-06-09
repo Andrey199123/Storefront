@@ -1,4 +1,3 @@
-<!-- Andrey Vasilyev 5/26/24 -->
 {% extends 'base.html' %}
 
 {% block title%}
@@ -23,7 +22,7 @@
                     <label for="product_name" class="col-form-label">Product Sell Price</label>
                     <input type="text" name="product_price" id="product_price" value="{{product.price}}">
                     <label for="product_name" class="col-form-label">Product Purchase Price</label>
-                    <input type="text" name="product_price" id="purchase_price" value="{{product.purchase_price}}">
+                    <input type="text" name="purchase_price" id="purchase_price" value="{{product.purchase_price}}">
                     <br>
                     <input id="submitProduct" value="Update" class="btn btn-primary">
                 </form>
