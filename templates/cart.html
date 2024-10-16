@@ -42,7 +42,15 @@
             <h4>Subtotal: $<span id="subtotal">0.00</span></h4>
             <h4>Tax (7%): $<span id="tax">0.00</span></h4>
             <h3>Total: $<span id="total">0.00</span></h3>
-            <button class="btn btn-primary" onclick="printReceipt()" id="checkout-button">Checkout</button>
+
+            <form action="/create-checkout-session" method="POST" id="checkout-form">
+                <!-- Hidden fields to pass total amount and movements -->
+                <input type="hidden" id="total-amount" name="total_amount" value="0">
+                <input type="hidden" id="movements-data" name="movements" value="[]">
+
+                <button class="btn btn-primary" id="checkout-button">Checkout</button>
+            </form>
+
             <button class="btn btn-warning" onclick="window.print()">Print Receipt</button>
         </div>
     </div>
@@ -77,56 +85,58 @@
       </div>
     </div>
 </div>
+
 <script>
+    // Function to update totals
     function updateTotal(select) {
-        var quantity = select.value;
+        var quantity = parseInt(select.value);
         var price = parseFloat(select.parentElement.previousElementSibling.innerText);
-        var total = (quantity * price).toFixed(2);
-        select.parentElement.nextElementSibling.innerText = total;
+        var rowTotal = (quantity * price).toFixed(2);
+        select.parentElement.nextElementSibling.innerText = rowTotal;
 
-        // Update subtotal
-        document.getElementById('subtotal').innerText = (parseFloat(document.getElementById('subtotal').innerText) + parseInt(total)).toFixed(2);
-        var subtotal = parseFloat(document.getElementById('subtotal').innerText);
+        // Recalculate the subtotal
+        var subtotal = 0;
+        var rows = document.querySelectorAll('#cart-items tr');
+        rows.forEach(row => {
+            var total = parseFloat(row.querySelector('td:nth-child(5)').innerText);
+            subtotal += total;
+        });
 
-        // Update tax
+        // Update displayed subtotal
+        document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+
+        // Update tax and total
         var tax = (subtotal * 0.07).toFixed(2);
         document.getElementById('tax').innerText = tax;
 
-        // Update total
         var totalAmount = (subtotal + parseFloat(tax)).toFixed(2);
         document.getElementById('total').innerText = totalAmount;
+
+        // Update hidden input for total amount (convert to cents for Stripe)
+        document.getElementById('total-amount').value = totalAmount * 100;
+
+        // Update movements data
+        updateMovements();
     }
 
-    function printReceipt() {
-        // Move items
+    // Function to update movements (productId and quantity)
+    function updateMovements() {
         var movements = [];
         var rows = document.querySelectorAll('#cart-items tr');
         rows.forEach(row => {
             var productId = row.children[1].innerText;
             var quantity = row.querySelector('select').value;
-            movements.push({ productId, quantity });
+            movements.push({ productId: productId, quantity: quantity });
         });
 
-        fetch('/checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ movements }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Checkout successful!');
-                window.location.href = '/home';
-            } else {
-                alert('There was an issue with checkout: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('There was an error processing your request.');
-        });
+        // Update hidden input with movements data
+        document.getElementById('movements-data').value = JSON.stringify(movements);
     }
+
+    // Ensure movements and total are updated before submitting the checkout form
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        updateMovements();
+    });
 </script>
+
 {% endblock %}
