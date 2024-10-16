@@ -31,7 +31,7 @@ if not os.path.exists('counter.txt'):
     open('counter.txt', 'wb').close()
 
 app = Flask(__name__)
-app.secret_key = 'gJwlRqBv959595'
+app.secret_key = ''
 
 
 # Remove customer and remove location when display options to add a new movement
