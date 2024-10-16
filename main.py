@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, jsonify, flash
+# Andrey Vasilyev 10/15/24
+from flask import Flask, render_template, request, redirect, jsonify, flash, session
 from collections import defaultdict
 import pickle
 from datetime import datetime
@@ -7,6 +8,11 @@ import re
 import pytz
 from werkzeug.security import check_password_hash, generate_password_hash
 import subprocess
+import stripe
+
+stripe.api_key = ''  # IMPORTANT
+
+YOUR_DOMAIN = 'http://127.0.0.1:5000'
 
 users_file = 'users.pkl'
 product_file = 'product.pkl'
@@ -31,7 +37,7 @@ if not os.path.exists('counter.txt'):
     open('counter.txt', 'wb').close()
 
 app = Flask(__name__)
-app.secret_key = ''
+app.secret_key = 'gJwlRqBv959595'  #IMPORTANT
 
 
 # Remove customer and remove location when display options to add a new movement
@@ -533,6 +539,59 @@ def cart():
     return render_template("cart.html", movements=unique_movements.values())  # Sends add to cart page
 
 
+@app.route('/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+    try:
+        # Get total amount and movements from the form
+        total_amount = request.form.get('total_amount')  # In cents
+        movements = request.form.get('movements')
+
+        if not total_amount or not movements:
+            return "Missing total amount or movements data", 400
+
+        # Store movements in the session (optional) for success page
+        session['movements'] = movements
+
+        # Create Stripe checkout session
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[
+                {
+                    'price_data': {
+                        'currency': 'usd',
+                        'product_data': {
+                            'name': 'Total Cart Payment',
+                        },
+                        'unit_amount': int(total_amount),  # Total price in cents
+                    },
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url=YOUR_DOMAIN + '/success',
+            cancel_url=YOUR_DOMAIN + '/cancel',
+        )
+
+        return redirect(checkout_session.url, code=303)
+
+    except Exception as e:
+        return str(e), 500
+
+
+@app.route('/success')
+def success():
+    # Process the successful payment and handle inventory update
+    movements = session.get('movements')
+    # Here, you would update inventory based on movements
+    return render_template('success.html', message="Payment successful! Inventory updated.")
+
+
+@app.route('/cancel')
+def cancel():
+    # Redirect back to the cart if payment is canceled
+    return redirect('/cart')
+
+
 @app.route('/checkout', methods=['POST'])
 def checkout():
     """Changes the inventory depending on what the user bought (receipt printing functionality is in html file)"""
@@ -615,4 +674,4 @@ if __name__ == "__main__":
         remove = Location(location_id='Remove')  # Option to remove inventory
         locations.append(remove)
     save_to_pkl(locations, location_file)
-    app.run(debug=False)
+    app.run(debug=True)
