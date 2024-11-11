@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import subprocess
 import stripe
 
-stripe.api_key = ''  # IMPORTANT
+stripe.api_key = ''  # important
 
 YOUR_DOMAIN = 'http://127.0.0.1:5000'
 
