@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Client Details - SmartChoice</title>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Client Details</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/home">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/clients/">Clients</a></li>
+            <li class="breadcrumb-item active">{{ client.name }}</li>
+        </ol>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="card mb-4">
+            <div class="card-header">Edit Client Information</div>
+            <div class="card-body">
+                <form action="/clients/{{ client.client_id }}" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="client_name" class="col-form-label">Client Name *</label>
+                            <input type="text" name="client_name" id="client_name" class="form-control" value="{{ client.name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="client_email" class="col-form-label">Email</label>
+                            <input type="email" name="client_email" id="client_email" class="form-control" value="{{ client.email }}">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label for="client_phone" class="col-form-label">Phone</label>
+                            <input type="tel" name="client_phone" id="client_phone" class="form-control" value="{{ client.phone }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="household_size" class="col-form-label">Household Size</label>
+                            <input type="number" name="household_size" id="household_size" class="form-control" value="{{ client.household_size }}" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="language" class="col-form-label">Language</label>
+                            <select name="language" id="language" class="form-control">
+                                <option value="English" {% if client.language == 'English' %}selected{% endif %}>English</option>
+                                <option value="Spanish" {% if client.language == 'Spanish' %}selected{% endif %}>Spanish</option>
+                                <option value="French" {% if client.language == 'French' %}selected{% endif %}>French</option>
+                                <option value="Chinese" {% if client.language == 'Chinese' %}selected{% endif %}>Chinese</option>
+                                <option value="Arabic" {% if client.language == 'Arabic' %}selected{% endif %}>Arabic</option>
+                                <option value="Russian" {% if client.language == 'Russian' %}selected{% endif %}>Russian</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label for="points_per_visit" class="col-form-label">Points Per Visit</label>
+                            <input type="number" name="points_per_visit" id="points_per_visit" class="form-control" value="{{ client.points_per_visit }}" min="1">
+                        </div>
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-primary">Update Client</button>
+                    <a href="/clients/" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-shopping-cart mr-1"></i>
+                Order History
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    {% if orders|length < 1 %}
+                    <p>No orders yet</p>
+                    {% else %}
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total Points</th>
+                                <th>Fulfillment</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.order_id }}</td>
+                                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ order.items|length }} items</td>
+                                <td>{{ order.total_points }}</td>
+                                <td>{{ order.fulfillment_method }}</td>
+                                <td>
+                                    <span class="badge {% if order.status == 'Completed' %}badge-success{% elif order.status == 'Pending' %}badge-warning{% else %}badge-info{% endif %}">
+                                        {{ order.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

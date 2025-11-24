@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartChoice™ - Checkout</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.min.css')}}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .checkout-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            margin: -30px -30px 30px -30px;
+            border-radius: 10px 10px 0 0;
+        }
+        .header h2 {
+            margin: 0;
+        }
+        .order-summary {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .order-summary h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        .total-points {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2E7D32;
+            text-align: right;
+            margin-top: 15px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .fulfillment-option {
+            display: block;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .fulfillment-option:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+        .fulfillment-option input[type="radio"] {
+            margin-right: 10px;
+        }
+        .fulfillment-option .title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+        .fulfillment-option .description {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: #2E7D32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-submit:hover {
+            background: #1B5E20;
+        }
+        .btn-back {
+            width: 100%;
+            padding: 15px;
+            background: #666;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="header">
+            <h2>Checkout</h2>
+            <p>Review your order and select fulfillment method</p>
+        </div>
+        
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            {% for item in cart %}
+                <div class="cart-item">
+                    <div>
+                        <strong>{{ item.name }}</strong><br>
+                        <small>Quantity: {{ item.quantity }}</small>
+                    </div>
+                    <div>{{ item.points * item.quantity }} points</div>
+                </div>
+            {% endfor %}
+            <div class="total-points">
+                Total: {{ cart|sum(attribute='points')|default(0) }} points
+            </div>
+        </div>
+        
+        <form action="/shop/checkout" method="POST">
+            <div class="form-group">
+                <label>Select Fulfillment Method:</label>
+                
+                <label class="fulfillment-option">
+                    <input type="radio" name="fulfillment_method" value="Pickup" checked>
+                    <div class="title">🏪 Pantry Pickup</div>
+                    <div class="description">Pick up your order inside the pantry during operating hours</div>
+                </label>
+                
+                <label class="fulfillment-option">
+                    <input type="radio" name="fulfillment_method" value="Curbside">
+                    <div class="title">🚗 Curbside Pickup</div>
+                    <div class="description">We'll bring your order to your car</div>
+                </label>
+                
+                <label class="fulfillment-option">
+                    <input type="radio" name="fulfillment_method" value="Locker">
+                    <div class="title">🔒 24/7 Refrigerated Locker</div>
+                    <div class="description">Pick up anytime from our secure lockers</div>
+                </label>
+                
+                <label class="fulfillment-option">
+                    <input type="radio" name="fulfillment_method" value="Delivery">
+                    <div class="title">🚚 Home Delivery</div>
+                    <div class="description">We'll deliver to your home address</div>
+                </label>
+                
+                <label class="fulfillment-option">
+                    <input type="radio" name="fulfillment_method" value="Satellite">
+                    <div class="title">📍 Satellite Pickup Location</div>
+                    <div class="description">Pick up at a community location near you</div>
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label for="pickup_time">Preferred Pickup/Delivery Time:</label>
+                <input type="datetime-local" id="pickup_time" name="pickup_time">
+            </div>
+            
+            <button type="submit" class="btn-submit">Place Order</button>
+            <a href="/shop/categories" class="btn-back">← Back to Shopping</a>
+        </form>
+    </div>
+</body>
+</html>

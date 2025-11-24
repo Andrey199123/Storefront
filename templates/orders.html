@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Orders - SmartChoice</title>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Order Management</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/home">Dashboard</a></li>
+            <li class="breadcrumb-item active">Orders</li>
+        </ol>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-shopping-cart mr-1"></i>
+                All Orders
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    {% if orders|length < 1 %}
+                    <h4>No orders yet</h4>
+                    {% else %}
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total Points</th>
+                                <th>Fulfillment</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.order_id }}</td>
+                                <td>{{ client_lookup.get(order.client_id, order.client_id) }}</td>
+                                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="showItems{{ order.order_id }}()">
+                                        View ({{ order.items|length }})
+                                    </button>
+                                    <div id="items{{ order.order_id }}" style="display:none; margin-top:10px;">
+                                        <ul>
+                                            {% for item in order.items %}
+                                                <li>{{ item.name }} x{{ item.quantity }} ({{ item.points * item.quantity }} pts)</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <script>
+                                        function showItems{{ order.order_id }}() {
+                                            var div = document.getElementById('items{{ order.order_id }}');
+                                            div.style.display = div.style.display === 'none' ? 'block' : 'none';
+                                        }
+                                    </script>
+                                </td>
+                                <td>{{ order.total_points }}</td>
+                                <td>{{ order.fulfillment_method }}</td>
+                                <td>
+                                    <select class="form-control form-control-sm" onchange="updateStatus({{ order.order_id }}, this.value)">
+                                        <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>Ready</option>
+                                        <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                        <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <a href="/clients/{{ order.client_id }}" class="btn btn-sm btn-secondary">View Client</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function updateStatus(orderId, newStatus) {
+        fetch('/orders/' + orderId + '/update-status', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: newStatus})
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Order status updated successfully');
+                  location.reload();
+              } else {
+                  alert('Error updating status');
+              }
+          });
+    }
+</script>
+{% endblock %}

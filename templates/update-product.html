@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Update Product - SmartChoice</title>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Update Product</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/home">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/products/">Products</a></li>
+            <li class="breadcrumb-item active">Update Product</li>
+        </ol>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-info">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="card mb-4">
+            <div class="card-header">Update Product</div>
+            <div class="card-body">
+                <form action="/update-product/{{ product.product_id }}" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="product_name" class="col-form-label">Product Name *</label>
+                            <input type="text" name="product_name" id="product_name" class="form-control" value="{{ product.product_id }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="category" class="col-form-label">MyPlate Category *</label>
+                            <select name="category" id="category" class="form-control" required>
+                                <option value="Fruits" {% if product.category == 'Fruits' %}selected{% endif %}>Fruits</option>
+                                <option value="Vegetables" {% if product.category == 'Vegetables' %}selected{% endif %}>Vegetables</option>
+                                <option value="Dairy" {% if product.category == 'Dairy' %}selected{% endif %}>Dairy</option>
+                                <option value="Proteins" {% if product.category == 'Proteins' %}selected{% endif %}>Proteins</option>
+                                <option value="Grains" {% if product.category == 'Grains' %}selected{% endif %}>Grains</option>
+                                <option value="Other" {% if product.category == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label for="description" class="col-form-label">Description</label>
+                            <input type="text" name="description" id="description" class="form-control" value="{{ product.description }}">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label for="upc" class="col-form-label">UPC/Barcode</label>
+                            <input type="text" name="upc" id="upc" class="form-control" value="{{ product.upc }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="servings" class="col-form-label">Servings</label>
+                            <input type="number" name="servings" id="servings" class="form-control" value="{{ product.servings }}" min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="points" class="col-form-label">Points *</label>
+                            <input type="number" name="points" id="points" class="form-control" value="{{ product.points }}" min="1" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="nutrition_score" class="col-form-label">Nutrition Score (0-100)</label>
+                            <input type="number" name="nutrition_score" id="nutrition_score" class="form-control" value="{{ product.nutrition_score }}" min="0" max="100">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="col-form-label">Dietary Indicators</label>
+                            <div>
+                                <label><input type="checkbox" name="vegan" {% if 'vegan' in product.dietary_indicators %}checked{% endif %}> Vegan</label>
+                                <label><input type="checkbox" name="vegetarian" {% if 'vegetarian' in product.dietary_indicators %}checked{% endif %}> Vegetarian</label>
+                                <label><input type="checkbox" name="gluten_free" {% if 'gluten-free' in product.dietary_indicators %}checked{% endif %}> Gluten-Free</label>
+                                <label><input type="checkbox" name="low_sodium" {% if 'low-sodium' in product.dietary_indicators %}checked{% endif %}> Low Sodium</label>
+                                <label><input type="checkbox" name="sugar_free" {% if 'sugar-free' in product.dietary_indicators %}checked{% endif %}> Sugar-Free</label>
+                                <label><input type="checkbox" name="dairy_free" {% if 'dairy-free' in product.dietary_indicators %}checked{% endif %}> Dairy-Free</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="col-form-label">Allergens</label>
+                            <div>
+                                <label><input type="checkbox" name="milk" {% if 'milk' in product.allergens %}checked{% endif %}> Milk</label>
+                                <label><input type="checkbox" name="eggs" {% if 'eggs' in product.allergens %}checked{% endif %}> Eggs</label>
+                                <label><input type="checkbox" name="fish" {% if 'fish' in product.allergens %}checked{% endif %}> Fish</label>
+                                <label><input type="checkbox" name="shellfish" {% if 'shellfish' in product.allergens %}checked{% endif %}> Shellfish</label>
+                                <label><input type="checkbox" name="tree_nuts" {% if 'tree nuts' in product.allergens %}checked{% endif %}> Tree Nuts</label>
+                                <label><input type="checkbox" name="peanuts" {% if 'peanuts' in product.allergens %}checked{% endif %}> Peanuts</label>
+                                <label><input type="checkbox" name="gluten" {% if 'gluten' in product.allergens %}checked{% endif %}> Gluten</label>
+                                <label><input type="checkbox" name="soybeans" {% if 'soybeans' in product.allergens %}checked{% endif %}> Soybeans</label>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-primary">Update Product</button>
+                    <a href="/products/" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

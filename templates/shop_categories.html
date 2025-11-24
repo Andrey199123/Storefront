@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartChoice™ - Select Category</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.min.css')}}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container-fluid {
+            display: flex;
+            height: 100vh;
+            padding: 0;
+        }
+        .categories-panel {
+            flex: 0 0 60%;
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .cart-panel {
+            flex: 0 0 40%;
+            background: #fafafa;
+            padding: 20px;
+            border-left: 2px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .category-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .category-row:hover {
+            transform: translateX(5px);
+        }
+        .category-image {
+            flex: 0 0 150px;
+            height: 80px;
+            background-size: cover;
+            background-position: center;
+        }
+        .category-label {
+            flex: 1;
+            padding: 20px;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .cat-fruits { background: #C62828; }
+        .cat-vegetables { background: #2E7D32; }
+        .cat-dairy { background: #1976D2; }
+        .cat-proteins { background: #7B1FA2; }
+        .cat-grains { background: #F9A825; }
+        .cat-other { background: #616161; }
+        .myplate-summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .myplate-summary h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .myplate-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .myplate-box {
+            flex: 1;
+            min-width: 60px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+        .myplate-box .number {
+            font-size: 20px;
+            display: block;
+        }
+        .myplate-box .label {
+            font-size: 10px;
+            display: block;
+            margin-top: 5px;
+        }
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .cart-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cart-item-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .cart-item-details {
+            font-size: 12px;
+            color: #666;
+        }
+        .cart-item-remove {
+            background: #66BB6A;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .cart-empty {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .btn-action {
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-action:hover {
+            opacity: 0.9;
+        }
+        .btn-checkout {
+            background: #2E7D32;
+            color: white;
+            grid-column: 1 / -1;
+        }
+        .btn-cancel {
+            background: #D32F2F;
+            color: white;
+        }
+        .btn-staff {
+            background: #8E24AA;
+            color: white;
+        }
+        .points-display {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .points-display .remaining {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        .points-display .label {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="categories-panel">
+            <div class="header">
+                <h2>Select a Category</h2>
+                <p>Welcome, {{ client.name }}!</p>
+            </div>
+            
+            <a href="/shop/category/Fruits" style="text-decoration: none;">
+                <div class="category-row">
+                    <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=300');"></div>
+                    <div class="category-label cat-fruits">Fruits</div>
+                </div>
+            </a>
+            
+            <a href="/shop/category/Vegetables" style="text-decoration: none;">
+                <div class="category-row">
+                    <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1540420773420-3366772f4999?w=300');"></div>
+                    <div class="category-label cat-vegetables">Vegetables</div>
+                </div>
+            </a>
+            
+            <a href="/shop/category/Dairy" style="text-decoration: none;">
+                <div class="category-row">
+                    <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=300');"></div>
+                    <div class="category-label cat-dairy">Dairy</div>
+                </div>
+            </a>
+            
+            <a href="/shop/category/Proteins" style="text-decoration: none;">
+                <div class="category-row">
+                    <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=300');"></div>
+                    <div class="category-label cat-proteins">Proteins</div>
+                </div>
+            </a>
+            
+            <a href="/shop/category/Grains" style="text-decoration: none;">
+                <div class="category-row">
+                    <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300');"></div>
+                    <div class="category-label cat-grains">Grains</div>
+                </div>
+            </a>
+            
+            <a href="/shop/category/Other" style="text-decoration: none;">
+                <div class="category-row">
+                    <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?w=300');"></div>
+                    <div class="category-label cat-other">Other</div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="cart-panel">
+            <div class="header">
+                <h2>Your Cart</h2>
+            </div>
+            
+            <div class="points-display">
+                <div class="remaining">{{ points_remaining }}</div>
+                <div class="label">Points Remaining</div>
+            </div>
+            
+            <div class="myplate-summary">
+                <h3>MyPlate Points</h3>
+                <div class="myplate-grid">
+                    <div class="myplate-box cat-fruits">
+                        <span class="number">{{ myplate_points['Fruits'] }}</span>
+                        <span class="label">Fruits</span>
+                    </div>
+                    <div class="myplate-box cat-vegetables">
+                        <span class="number">{{ myplate_points['Vegetables'] }}</span>
+                        <span class="label">Veggies</span>
+                    </div>
+                    <div class="myplate-box cat-dairy">
+                        <span class="number">{{ myplate_points['Dairy'] }}</span>
+                        <span class="label">Dairy</span>
+                    </div>
+                    <div class="myplate-box cat-proteins">
+                        <span class="number">{{ myplate_points['Proteins'] }}</span>
+                        <span class="label">Protein</span>
+                    </div>
+                    <div class="myplate-box cat-grains">
+                        <span class="number">{{ myplate_points['Grains'] }}</span>
+                        <span class="label">Grains</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cart-items">
+                {% if cart|length == 0 %}
+                    <div class="cart-empty">
+                        <p>Your cart is empty</p>
+                        <p>Select a category to start shopping</p>
+                    </div>
+                {% else %}
+                    {% for item in cart %}
+                        <div class="cart-item">
+                            <div>
+                                <div class="cart-item-name">{{ item.name }}</div>
+                                <div class="cart-item-details">Qty: {{ item.quantity }} | Points: {{ item.points * item.quantity }}</div>
+                            </div>
+                            <button class="cart-item-remove" onclick="removeItem('{{ item.product_id }}')">Remove</button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="action-buttons">
+                {% if cart|length > 0 %}
+                    <a href="/shop/checkout" style="text-decoration: none; grid-column: 1 / -1;">
+                        <button class="btn-action btn-checkout">Checkout</button>
+                    </a>
+                {% endif %}
+                <a href="/shop/logout" style="text-decoration: none;">
+                    <button class="btn-action btn-cancel">Cancel Order</button>
+                </a>
+                <button class="btn-action btn-staff">Talk with Staff</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function removeItem(productId) {
+            fetch('/shop/remove-from-cart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({product_id: productId})
+            }).then(() => location.reload());
+        }
+    </script>
+</body>
+</html>

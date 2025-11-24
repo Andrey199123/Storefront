@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Successful</title>
+</head>
+<body>
+    <h1>Payment Successful</h1>
+
+    <!-- We can use hidden inputs or a script variable to pass cart data -->
+    <input type="hidden" id="cart-data" value="{{ movements|tojson }}">
+
+    <script>
+        function printReceipt() {
+            // Retrieve cart data from the hidden input
+            var movements = JSON.parse(document.getElementById('cart-data').value);
+
+            fetch('/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ movements: movements }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Checkout successful!');
+                    window.location.href = '/home';  // Redirect to home after successful checkout
+                } else {
+                    alert('There was an issue with checkout: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error processing your request.');
+            });
+        }
+
+        // Call the function to run after the success page loads
+        window.onload = printReceipt;
+    </script>
+</body>
+</html>

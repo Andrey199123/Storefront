@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>StoreSync</title>
+{% endblock %}
+
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Dashboard</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+        
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-primary text-white mb-4">
+                    <div class="card-body">
+                        <h4>{{ clients|length }}</h4>
+                        <div>Total Clients</div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="/clients/">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-warning text-white mb-4">
+                    <div class="card-body">
+                        <h4>{{ pending_orders }}</h4>
+                        <div>Pending Orders</div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="/orders/">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-success text-white mb-4">
+                    <div class="card-body">
+                        <h4>{{ products|length }}</h4>
+                        <div>Products</div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="/products/">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-info text-white mb-4">
+                    <div class="card-body">
+                        <h4>{{ locations|length }}</h4>
+                        <div>Locations</div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="/locations/">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-shopping-cart mr-1"></i>
+                        Recent Orders
+                    </div>
+                    <div class="card-body">
+                        {% if recent_orders|length < 1 %}
+                        <p>No orders yet</p>
+                        {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Client</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr>
+                                        <td>#{{ order.order_id }}</td>
+                                        <td>{{ order.client_id }}</td>
+                                        <td>
+                                            <span class="badge {% if order.status == 'Completed' %}badge-success{% elif order.status == 'Pending' %}badge-warning{% else %}badge-info{% endif %}">
+                                                {{ order.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ order.created_at.strftime('%m/%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-link mr-1"></i>
+                        Quick Links
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a href="/shop" class="list-group-item list-group-item-action">
+                                <i class="fas fa-shopping-bag mr-2"></i> Client Shopping Portal
+                            </a>
+                            <a href="/kiosk" class="list-group-item list-group-item-action">
+                                <i class="fas fa-desktop mr-2"></i> Kiosk Mode
+                            </a>
+                            <a href="/clients/" class="list-group-item list-group-item-action">
+                                <i class="fas fa-user-plus mr-2"></i> Register New Client
+                            </a>
+                            <a href="/products/" class="list-group-item list-group-item-action">
+                                <i class="fas fa-plus-circle mr-2"></i> Add New Product
+                            </a>
+                            <a href="/movements/" class="list-group-item list-group-item-action">
+                                <i class="fas fa-truck mr-2"></i> Record Inventory Movement
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

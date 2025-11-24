@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Shopping Cart</title>
+{% endblock %}
+
+{% block content %}
+<div id="printableArea">
+    <div class="container mt-4">
+        <h2 class="mb-4">Shopping Cart</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Product Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="cart-items">
+                {% for movement in movements %}
+                <tr>
+                    {% set i = 0 %}
+                    <td>{{ movement.movement_id }}</td>
+                    <td>{{ movement.product_id }}</td>
+                    <td>{{ movement.price }}</td>
+                    <td>
+                        <select name="quantity-{{ movement.qty }}" onchange="updateTotal(this)">
+                            {% for i in range(0, movement.qty | int + 1) %}
+                            <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    {% set subtotal = (i|int * movement.price|float)|round(2) %}
+                    <td>{{ subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="text-right">
+            <h4>Subtotal: $<span id="subtotal">0.00</span></h4>
+            <h4>Tax (7%): $<span id="tax">0.00</span></h4>
+            <h3>Total: $<span id="total">0.00</span></h3>
+
+            <form action="/create-checkout-session" method="POST" id="checkout-form">
+                <!-- Hidden fields to pass total amount and movements -->
+                <input type="hidden" id="total-amount" name="total_amount" value="0">
+                <input type="hidden" id="movements-data" name="movements" value="[]">
+
+                <button class="btn btn-primary" id="checkout-button">Checkout</button>
+            </form>
+
+            <button class="btn btn-warning" onclick="window.print()">Print Receipt</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addToCartModal" tabindex="-1" role="dialog" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addToCartModalLabel">Add to Cart</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="add-to-cart-form">
+              <div class="form-group">
+                <label for="product-name">Product Name</label>
+                <input type="text" class="form-control" id="product-name" readonly>
+              </div>
+              <div class="form-group">
+                <label for="product-price">Price</label>
+                <input type="text" class="form-control" id="product-price" readonly>
+              </div>
+              <div class="form-group">
+                <label for="product-quantity">Quantity</label>
+                <input type="number" class="form-control" id="product-quantity" value="1" min="1">
+              </div>
+              <button type="submit" class="btn btn-primary">Add to Cart</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script>
+    // Function to update totals
+    function updateTotal(select) {
+        var quantity = parseInt(select.value);
+        var price = parseFloat(select.parentElement.previousElementSibling.innerText);
+        var rowTotal = (quantity * price).toFixed(2);
+        select.parentElement.nextElementSibling.innerText = rowTotal;
+
+        // Recalculate the subtotal
+        var subtotal = 0;
+        var rows = document.querySelectorAll('#cart-items tr');
+        rows.forEach(row => {
+            var total = parseFloat(row.querySelector('td:nth-child(5)').innerText);
+            subtotal += total;
+        });
+
+        // Update displayed subtotal
+        document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+
+        // Update tax and total
+        var tax = (subtotal * 0.07).toFixed(2);
+        document.getElementById('tax').innerText = tax;
+
+        var totalAmount = (subtotal + parseFloat(tax)).toFixed(2);
+        document.getElementById('total').innerText = totalAmount;
+
+        // Update hidden input for total amount (convert to cents for Stripe)
+        document.getElementById('total-amount').value = totalAmount * 100;
+
+        // Update movements data
+        updateMovements();
+    }
+
+    // Function to update movements (productId and quantity)
+    function updateMovements() {
+        var movements = [];
+        var rows = document.querySelectorAll('#cart-items tr');
+        rows.forEach(row => {
+            var productId = row.children[1].innerText;
+            var quantity = row.querySelector('select').value;
+            movements.push({ productId: productId, quantity: quantity });
+        });
+
+        // Update hidden input with movements data
+        document.getElementById('movements-data').value = JSON.stringify(movements);
+    }
+
+    // Ensure movements and total are updated before submitting the checkout form
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        updateMovements();
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartChoice™ - Order Confirmed</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.min.css')}}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .confirmation-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #2E7D32;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .order-number {
+            font-size: 24px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .order-details {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .order-details h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .fulfillment-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #1976D2;
+        }
+        .fulfillment-info strong {
+            color: #1976D2;
+        }
+        .btn-done {
+            width: 100%;
+            padding: 15px;
+            background: #2E7D32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            margin-top: 20px;
+        }
+        .btn-done:hover {
+            background: #1B5E20;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-container">
+        <div class="success-icon">✓</div>
+        <h1>Order Confirmed!</h1>
+        <p>Thank you for your order</p>
+        
+        <div class="order-number">
+            Order #{{ order.order_id }}
+        </div>
+        
+        <div class="order-details">
+            <h3>Order Items</h3>
+            {% for item in order.items %}
+                <div class="detail-row">
+                    <span>{{ item.name }} (x{{ item.quantity }})</span>
+                    <span>{{ item.points * item.quantity }} pts</span>
+                </div>
+            {% endfor %}
+            <div class="detail-row" style="font-weight: bold; font-size: 18px;">
+                <span>Total Points</span>
+                <span>{{ order.total_points }} pts</span>
+            </div>
+        </div>
+        
+        <div class="fulfillment-info">
+            <strong>Fulfillment Method:</strong> {{ order.fulfillment_method }}<br>
+            {% if order.pickup_time %}
+                <strong>Scheduled Time:</strong> {{ order.pickup_time }}
+            {% endif %}
+        </div>
+        
+        <p style="color: #666; margin: 20px 0;">
+            {% if order.fulfillment_method == 'Locker' %}
+                You will receive a text message with your locker code and pickup instructions.
+            {% elif order.fulfillment_method == 'Delivery' %}
+                Your order will be delivered to your registered address. You'll receive updates via text.
+            {% else %}
+                Please bring your order number when picking up your items.
+            {% endif %}
+        </p>
+        
+        <a href="/shop/logout" class="btn-done">Done</a>
+    </div>
+</body>
+</html>

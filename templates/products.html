@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Products</title>
+{% endblock %}
+
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Dashboard</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+            <li class="breadcrumb-item active">Products</li>
+        </ol>
+        <div class="card mb-4">
+            <div class="card-header">Products</div>
+            <div class="card-body">
+                <div class="card mb-4">
+                    <div class="card-header">New Product</div>
+                    <div class="card-body">
+                        <form action="/products/" method="POST" id="product_form">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="product_name" class="col-form-label">Product Name *</label>
+                                    <input type="text" name="product_name" id="product_name" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="category" class="col-form-label">MyPlate Category *</label>
+                                    <select name="category" id="category" class="form-control" required>
+                                        <option value="Fruits">Fruits</option>
+                                        <option value="Vegetables">Vegetables</option>
+                                        <option value="Dairy">Dairy</option>
+                                        <option value="Proteins">Proteins</option>
+                                        <option value="Grains">Grains</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <label for="description" class="col-form-label">Description</label>
+                                    <input type="text" name="description" id="description" class="form-control" placeholder="e.g., 2-3 stalks, Fresh">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <label for="upc" class="col-form-label">UPC/Barcode</label>
+                                    <input type="text" name="upc" id="upc" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="servings" class="col-form-label">Servings</label>
+                                    <input type="number" name="servings" id="servings" class="form-control" value="1" min="1">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="points" class="col-form-label">Points *</label>
+                                    <input type="number" name="points" id="points" class="form-control" value="1" min="1" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="nutrition_score" class="col-form-label">Nutrition Score (0-100)</label>
+                                    <input type="number" name="nutrition_score" id="nutrition_score" class="form-control" value="50" min="0" max="100">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label class="col-form-label">Dietary Indicators</label>
+                                    <div>
+                                        <label><input type="checkbox" name="vegan"> Vegan</label>
+                                        <label><input type="checkbox" name="vegetarian"> Vegetarian</label>
+                                        <label><input type="checkbox" name="gluten_free"> Gluten-Free</label>
+                                        <label><input type="checkbox" name="low_sodium"> Low Sodium</label>
+                                        <label><input type="checkbox" name="sugar_free"> Sugar-Free</label>
+                                        <label><input type="checkbox" name="dairy_free"> Dairy-Free</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="col-form-label">Allergens</label>
+                                    <div>
+                                        <label><input type="checkbox" name="milk"> Milk</label>
+                                        <label><input type="checkbox" name="eggs"> Eggs</label>
+                                        <label><input type="checkbox" name="fish"> Fish</label>
+                                        <label><input type="checkbox" name="shellfish"> Shellfish</label>
+                                        <label><input type="checkbox" name="tree_nuts"> Tree Nuts</label>
+                                        <label><input type="checkbox" name="peanuts"> Peanuts</label>
+                                        <label><input type="checkbox" name="gluten"> Gluten</label>
+                                        <label><input type="checkbox" name="soybeans"> Soybeans</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <button type="submit" class="btn btn-primary">Add Product</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table mr-1"></i>
+                    Products Table
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        {% if products|length < 1 %}
+                        <h4>There are no Products, add one above</h4>
+                        {% else %}
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Points</th>
+                                    <th>Nutrition Score</th>
+                                    <th>Servings</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>{{ product.product_id }}</td>
+                                    <td>{{ product.category }}</td>
+                                    <td>{{ product.points }}</td>
+                                    <td>{{ product.nutrition_score }}</td>
+                                    <td>{{ product.servings }}</td>
+                                    <td>{{ product.date_created }}</td>
+                                    <td>
+                                        <a href="/update-product/{{ product.product_id }}">Edit</a>
+                                        |
+                                        <a href="/delete-product/{{ product.product_id }}" onclick="return confirm('Delete this product?')">Delete</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

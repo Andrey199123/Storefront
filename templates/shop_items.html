@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartChoice™ - {{ category }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.min.css')}}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container-fluid {
+            display: flex;
+            height: 100vh;
+            padding: 0;
+        }
+        .items-panel {
+            flex: 0 0 60%;
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .cart-panel {
+            flex: 0 0 40%;
+            background: #fafafa;
+            padding: 20px;
+            border-left: 2px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %};
+            color: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding-bottom: 20px;
+        }
+        .item-card {
+            background: white;
+            border: 3px solid {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %};
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .item-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .item-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .item-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .item-details span {
+            color: #555;
+        }
+        .nutrition-score {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white !important;
+            font-size: 14px;
+        }
+        .score-high { background: #2E7D32; }
+        .score-medium { background: #F9A825; }
+        .score-low { background: #D32F2F; }
+        .dietary-indicators {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .dietary-badge {
+            background: #e0e0e0;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            color: #555;
+        }
+        .add-btn {
+            width: 100%;
+            padding: 10px;
+            background: {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %};
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .add-btn:hover {
+            opacity: 0.9;
+        }
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .cart-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cart-item-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .cart-item-details {
+            font-size: 12px;
+            color: #666;
+        }
+        .points-display {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .points-display .remaining {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        .points-display .label {
+            font-size: 14px;
+            color: #666;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .btn-action {
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+        .btn-back {
+            background: #2E7D32;
+            color: white;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="items-panel">
+            <div class="header">
+                <h2>{{ category }}</h2>
+                <a href="/shop/categories" class="back-btn">← Back to Categories</a>
+            </div>
+            
+            {% if products|length == 0 %}
+                <div style="text-align: center; padding: 60px 20px; color: #999;">
+                    <h3>No items available in this category</h3>
+                    <p>Please check back later or select another category</p>
+                </div>
+            {% else %}
+                <div class="items-grid">
+                    {% for product in products %}
+                        <div class="item-card">
+                            <div class="item-name">{{ product.product_id }}</div>
+                            <div class="item-description">{{ product.description }}</div>
+                            <div class="item-details">
+                                <span>Servings: {{ product.servings }}</span>
+                                <span>Points: {{ product.points }}</span>
+                            </div>
+                            <div class="item-details">
+                                <span>Available: {{ product.available_qty }}</span>
+                                <span class="nutrition-score {% if product.nutrition_score >= 70 %}score-high{% elif product.nutrition_score >= 40 %}score-medium{% else %}score-low{% endif %}">
+                                    Score: {{ product.nutrition_score }}
+                                </span>
+                            </div>
+                            {% if product.dietary_indicators|length > 0 %}
+                                <div class="dietary-indicators">
+                                    {% for indicator in product.dietary_indicators %}
+                                        <span class="dietary-badge">{{ indicator }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <button class="add-btn" onclick="addToCart('{{ product.product_id }}')">Add to Cart</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="cart-panel">
+            <div class="header" style="background: #667eea;">
+                <h2>Your Cart</h2>
+            </div>
+            
+            <div class="points-display">
+                <div class="remaining">{{ points_remaining }}</div>
+                <div class="label">Points Remaining</div>
+            </div>
+            
+            <div class="cart-items">
+                {% if cart|length == 0 %}
+                    <div style="text-align: center; color: #999; padding: 40px 20px;">
+                        <p>Your cart is empty</p>
+                    </div>
+                {% else %}
+                    {% for item in cart %}
+                        <div class="cart-item">
+                            <div>
+                                <div class="cart-item-name">{{ item.name }}</div>
+                                <div class="cart-item-details">Qty: {{ item.quantity }} | Points: {{ item.points * item.quantity }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="action-buttons">
+                <a href="/shop/categories" class="btn-action btn-back">← Back to Categories</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function addToCart(productId) {
+            fetch('/shop/add-to-cart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({product_id: productId, quantity: 1})
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      location.reload();
+                  } else {
+                      alert('Error adding item to cart');
+                  }
+              });
+        }
+    </script>
+</body>
+</html>
