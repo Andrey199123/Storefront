@@ -24,6 +24,50 @@
             padding: 20px;
             overflow-y: auto;
         }
+        .filter-section {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+        .filter-section h3 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            border-color: #667eea;
+        }
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .clear-filters {
+            padding: 8px 16px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
         .cart-panel {
             flex: 0 0 40%;
             background: #fafafa;
@@ -200,6 +244,19 @@
                 <a href="/shop/categories" class="back-btn">← Back to Categories</a>
             </div>
             
+            <div class="filter-section">
+                <h3>🥗 Filter by Special Diet</h3>
+                <div class="filter-options">
+                    <button class="filter-btn" data-filter="vegan" onclick="toggleFilter(this)">🌱 Vegan</button>
+                    <button class="filter-btn" data-filter="vegetarian" onclick="toggleFilter(this)">🥕 Vegetarian</button>
+                    <button class="filter-btn" data-filter="gluten-free" onclick="toggleFilter(this)">🌾 Gluten-Free</button>
+                    <button class="filter-btn" data-filter="dairy-free" onclick="toggleFilter(this)">🥛 Dairy-Free</button>
+                    <button class="filter-btn" data-filter="low-sodium" onclick="toggleFilter(this)">🧂 Low Sodium</button>
+                    <button class="filter-btn" data-filter="sugar-free" onclick="toggleFilter(this)">🍬 Sugar-Free</button>
+                    <button class="clear-filters" onclick="clearFilters()">Clear All</button>
+                </div>
+            </div>
+            
             {% if products|length == 0 %}
                 <div style="text-align: center; padding: 60px 20px; color: #999;">
                     <h3>No items available in this category</h3>
@@ -208,7 +265,7 @@
             {% else %}
                 <div class="items-grid">
                     {% for product in products %}
-                        <div class="item-card">
+                        <div class="item-card" data-dietary="{{ product.dietary_indicators|join(',') }}">
                             <div class="item-name">{{ product.product_id }}</div>
                             <div class="item-description">{{ product.description }}</div>
                             <div class="item-details">
@@ -269,6 +326,45 @@
     </div>
     
     <script>
+        let activeFilters = [];
+        
+        function toggleFilter(button) {
+            const filter = button.getAttribute('data-filter');
+            button.classList.toggle('active');
+            
+            if (activeFilters.includes(filter)) {
+                activeFilters = activeFilters.filter(f => f !== filter);
+            } else {
+                activeFilters.push(filter);
+            }
+            
+            applyFilters();
+        }
+        
+        function clearFilters() {
+            activeFilters = [];
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            applyFilters();
+        }
+        
+        function applyFilters() {
+            const items = document.querySelectorAll('.item-card');
+            
+            items.forEach(item => {
+                const itemDietary = item.getAttribute('data-dietary').split(',').filter(d => d);
+                
+                if (activeFilters.length === 0) {
+                    item.style.display = 'block';
+                } else {
+                    // Check if item has ALL active filters (AND logic)
+                    const hasAllFilters = activeFilters.every(filter => itemDietary.includes(filter));
+                    item.style.display = hasAllFilters ? 'block' : 'none';
+                }
+            });
+        }
+        
         function addToCart(productId) {
             fetch('/shop/add-to-cart', {
                 method: 'POST',

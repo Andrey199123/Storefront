@@ -34,28 +34,38 @@ def setup_sample_data():
         
         # Dairy
         Product("Milk - 2%", category="Dairy", description="Half gallon", points=3, servings=8, nutrition_score=70, allergens=["milk"]),
+        Product("Almond Milk", category="Dairy", description="Half gallon", points=3, servings=8, nutrition_score=72, dietary_indicators=["vegan", "dairy-free", "gluten-free"]),
         Product("Yogurt - Plain", category="Dairy", description="32 oz container", points=3, servings=8, nutrition_score=75, allergens=["milk"]),
         Product("Cheese - Cheddar", category="Dairy", description="8 oz block", points=3, servings=8, nutrition_score=60, allergens=["milk"]),
         Product("Eggs", category="Dairy", description="1 dozen", points=3, servings=12, nutrition_score=85, allergens=["eggs"]),
+        Product("Coconut Yogurt", category="Dairy", description="24 oz container", points=3, servings=6, nutrition_score=70, dietary_indicators=["vegan", "dairy-free", "gluten-free"]),
         
         # Proteins
-        Product("Chicken Breast", category="Proteins", description="Frozen, 2 lb", points=5, servings=8, nutrition_score=80),
-        Product("Ground Beef", category="Proteins", description="Frozen, 1 lb", points=5, servings=4, nutrition_score=65),
-        Product("Canned Tuna", category="Proteins", description="5 oz can", points=2, servings=2, nutrition_score=75, allergens=["fish"]),
-        Product("Black Beans", category="Proteins", description="15 oz can", points=1, servings=4, nutrition_score=90, dietary_indicators=["vegan", "gluten-free"]),
-        Product("Peanut Butter", category="Proteins", description="16 oz jar", points=3, servings=16, nutrition_score=70, allergens=["peanuts"]),
+        Product("Chicken Breast", category="Proteins", description="Frozen, 2 lb", points=5, servings=8, nutrition_score=80, dietary_indicators=["gluten-free"]),
+        Product("Ground Beef", category="Proteins", description="Frozen, 1 lb", points=5, servings=4, nutrition_score=65, dietary_indicators=["gluten-free"]),
+        Product("Canned Tuna", category="Proteins", description="5 oz can", points=2, servings=2, nutrition_score=75, allergens=["fish"], dietary_indicators=["gluten-free"]),
+        Product("Black Beans", category="Proteins", description="15 oz can", points=1, servings=4, nutrition_score=90, dietary_indicators=["vegan", "gluten-free", "low-sodium"]),
+        Product("Peanut Butter", category="Proteins", description="16 oz jar", points=3, servings=16, nutrition_score=70, allergens=["peanuts"], dietary_indicators=["vegan", "gluten-free"]),
+        Product("Tofu - Firm", category="Proteins", description="14 oz package", points=3, servings=4, nutrition_score=85, dietary_indicators=["vegan", "vegetarian", "gluten-free", "low-sodium"]),
+        Product("Lentils - Dry", category="Proteins", description="16 oz bag", points=2, servings=12, nutrition_score=92, dietary_indicators=["vegan", "gluten-free", "low-sodium"]),
         
         # Grains
         Product("Whole Wheat Bread", category="Grains", description="20 oz loaf", points=2, servings=20, nutrition_score=75, allergens=["gluten"]),
-        Product("Brown Rice", category="Grains", description="2 lb bag", points=2, servings=16, nutrition_score=85, dietary_indicators=["vegan", "gluten-free"]),
+        Product("Gluten-Free Bread", category="Grains", description="18 oz loaf", points=3, servings=18, nutrition_score=70, dietary_indicators=["gluten-free"]),
+        Product("Brown Rice", category="Grains", description="2 lb bag", points=2, servings=16, nutrition_score=85, dietary_indicators=["vegan", "gluten-free", "low-sodium"]),
         Product("Pasta - Whole Wheat", category="Grains", description="16 oz box", points=2, servings=8, nutrition_score=70, allergens=["gluten"]),
-        Product("Oatmeal", category="Grains", description="18 oz container", points=2, servings=12, nutrition_score=88, dietary_indicators=["vegan"]),
+        Product("Pasta - Gluten Free", category="Grains", description="12 oz box", points=3, servings=6, nutrition_score=68, dietary_indicators=["vegan", "gluten-free"]),
+        Product("Oatmeal", category="Grains", description="18 oz container", points=2, servings=12, nutrition_score=88, dietary_indicators=["vegan", "gluten-free"]),
+        Product("Quinoa", category="Grains", description="16 oz bag", points=3, servings=12, nutrition_score=90, dietary_indicators=["vegan", "gluten-free", "low-sodium"]),
         Product("Cereal - Whole Grain", category="Grains", description="12 oz box", points=2, servings=10, nutrition_score=65),
         
         # Other
-        Product("Olive Oil", category="Other", description="16 oz bottle", points=3, servings=32, nutrition_score=75, dietary_indicators=["vegan", "gluten-free"]),
-        Product("Canned Tomatoes", category="Other", description="28 oz can", points=1, servings=6, nutrition_score=80, dietary_indicators=["vegan", "gluten-free"]),
-        Product("Soup - Vegetable", category="Other", description="15 oz can", points=2, servings=2, nutrition_score=60),
+        Product("Olive Oil", category="Other", description="16 oz bottle", points=3, servings=32, nutrition_score=75, dietary_indicators=["vegan", "gluten-free", "dairy-free"]),
+        Product("Canned Tomatoes", category="Other", description="28 oz can", points=1, servings=6, nutrition_score=80, dietary_indicators=["vegan", "gluten-free", "low-sodium"]),
+        Product("Soup - Vegetable", category="Other", description="15 oz can", points=2, servings=2, nutrition_score=60, dietary_indicators=["vegan", "vegetarian"]),
+        Product("Soup - Low Sodium", category="Other", description="15 oz can", points=2, servings=2, nutrition_score=65, dietary_indicators=["vegan", "vegetarian", "low-sodium"]),
+        Product("Honey", category="Other", description="12 oz bottle", points=2, servings=24, nutrition_score=55, dietary_indicators=["vegetarian", "gluten-free"]),
+        Product("Maple Syrup", category="Other", description="12 oz bottle", points=3, servings=24, nutrition_score=50, dietary_indicators=["vegan", "gluten-free", "sugar-free"]),
     ]
     
     save_to_pkl(products, 'product.pkl')

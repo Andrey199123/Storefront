@@ -26,6 +26,16 @@ This section shows how much money the store owner has made from selling the prod
 **Add to Cart Feature**  
 The store owner enters the products the customer chose to buy. They can select the available products in their respective locations and their quantities. The price and tax are dynamically updated each time a product is selected or its quantity is changed. At the bottom, there is a print receipt feature like in the revenue report section and a Checkout button.
 
+**Client Shopping Portal**  
+Clients can log in with their Client ID and shop for products using a points-based system. The shopping interface includes:
+- MyPlate category navigation (Fruits, Vegetables, Dairy, Proteins, Grains)
+- Points-based ordering system
+- Multiple fulfillment options (Pickup, Curbside, Delivery, Locker, Satellite)
+- **Special Diet Filtering** - Filter products by dietary preferences (Vegan, Vegetarian, Gluten-Free, Dairy-Free, Low Sodium, Sugar-Free)
+
+**Kiosk Mode**  
+A touch-friendly kiosk interface for in-person shopping with large buttons and simplified navigation.
+
 ## How We Built It
 We built the website using the Flask framework in Python. The webpages were created in HTML, and Flask was used for URL routing and the entire backend. To create a satisfying dynamic webpage, we used JavaScript and Ajax to facilitate communication between the frontend and backend. The storage of products, movements, and locations is done in PKL files.
 

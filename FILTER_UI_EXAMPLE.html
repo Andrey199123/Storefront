@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diet Filter UI Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .filter-section {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+        .filter-section h3 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            border-color: #667eea;
+        }
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .clear-filters {
+            padding: 8px 16px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .product-card {
+            border: 2px solid #2E7D32;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+        }
+        .product-card.hidden {
+            display: none;
+        }
+        .product-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .dietary-badges {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .dietary-badge {
+            background: #e0e0e0;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            color: #555;
+        }
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🥗 Diet Filtering UI Demo</h1>
+        
+        <div class="info-box">
+            <h3>How It Works</h3>
+            <p>Click the filter buttons below to see how products are filtered in real-time. Multiple filters can be active at once (AND logic).</p>
+        </div>
+
+        <!-- THIS IS THE FILTER SECTION THAT WAS ADDED -->
+        <div class="filter-section">
+            <h3>🥗 Filter by Special Diet</h3>
+            <div class="filter-options">
+                <button class="filter-btn" data-filter="vegan" onclick="toggleFilter(this)">🌱 Vegan</button>
+                <button class="filter-btn" data-filter="vegetarian" onclick="toggleFilter(this)">🥕 Vegetarian</button>
+                <button class="filter-btn" data-filter="gluten-free" onclick="toggleFilter(this)">🌾 Gluten-Free</button>
+                <button class="filter-btn" data-filter="dairy-free" onclick="toggleFilter(this)">🥛 Dairy-Free</button>
+                <button class="filter-btn" data-filter="low-sodium" onclick="toggleFilter(this)">🧂 Low Sodium</button>
+                <button class="filter-btn" data-filter="sugar-free" onclick="toggleFilter(this)">🍬 Sugar-Free</button>
+                <button class="clear-filters" onclick="clearFilters()">Clear All</button>
+            </div>
+        </div>
+
+        <!-- SAMPLE PRODUCTS -->
+        <div class="product-grid">
+            <div class="product-card" data-dietary="vegan,gluten-free,low-sodium">
+                <div class="product-name">Tofu - Firm</div>
+                <div>Points: 3</div>
+                <div class="dietary-badges">
+                    <span class="dietary-badge">vegan</span>
+                    <span class="dietary-badge">gluten-free</span>
+                    <span class="dietary-badge">low-sodium</span>
+                </div>
+            </div>
+
+            <div class="product-card" data-dietary="vegan,gluten-free">
+                <div class="product-name">Brown Rice</div>
+                <div>Points: 2</div>
+                <div class="dietary-badges">
+                    <span class="dietary-badge">vegan</span>
+                    <span class="dietary-badge">gluten-free</span>
+                </div>
+            </div>
+
+            <div class="product-card" data-dietary="gluten-free">
+                <div class="product-name">Chicken Breast</div>
+                <div>Points: 5</div>
+                <div class="dietary-badges">
+                    <span class="dietary-badge">gluten-free</span>
+                </div>
+            </div>
+
+            <div class="product-card" data-dietary="vegan,dairy-free,gluten-free">
+                <div class="product-name">Almond Milk</div>
+                <div>Points: 3</div>
+                <div class="dietary-badges">
+                    <span class="dietary-badge">vegan</span>
+                    <span class="dietary-badge">dairy-free</span>
+                    <span class="dietary-badge">gluten-free</span>
+                </div>
+            </div>
+
+            <div class="product-card" data-dietary="">
+                <div class="product-name">Regular Milk</div>
+                <div>Points: 3</div>
+                <div class="dietary-badges">
+                    <span class="dietary-badge" style="background: #ffcdd2;">Contains dairy</span>
+                </div>
+            </div>
+
+            <div class="product-card" data-dietary="vegan,gluten-free,low-sodium">
+                <div class="product-name">Lentils - Dry</div>
+                <div>Points: 2</div>
+                <div class="dietary-badges">
+                    <span class="dietary-badge">vegan</span>
+                    <span class="dietary-badge">gluten-free</span>
+                    <span class="dietary-badge">low-sodium</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeFilters = [];
+        
+        function toggleFilter(button) {
+            const filter = button.getAttribute('data-filter');
+            button.classList.toggle('active');
+            
+            if (activeFilters.includes(filter)) {
+                activeFilters = activeFilters.filter(f => f !== filter);
+            } else {
+                activeFilters.push(filter);
+            }
+            
+            applyFilters();
+        }
+        
+        function clearFilters() {
+            activeFilters = [];
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            applyFilters();
+        }
+        
+        function applyFilters() {
+            const items = document.querySelectorAll('.product-card');
+            
+            items.forEach(item => {
+                const itemDietary = item.getAttribute('data-dietary').split(',').filter(d => d);
+                
+                if (activeFilters.length === 0) {
+                    item.classList.remove('hidden');
+                } else {
+                    // Check if item has ALL active filters (AND logic)
+                    const hasAllFilters = activeFilters.every(filter => itemDietary.includes(filter));
+                    if (hasAllFilters) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -280,10 +280,19 @@ def shop_category_items(category):
     products = load_from_pkl(product_file)
     movements = load_from_pkl(movement_file)
     
+    # Get dietary filters from query parameters
+    diet_filters = request.args.getlist('diet')
+    
     # Filter products by category and check inventory
     category_products = []
     for product in products:
         if product.category == category:
+            # Apply dietary filters if any
+            if diet_filters:
+                # Check if product has all required dietary indicators
+                if not all(diet_filter in product.dietary_indicators for diet_filter in diet_filters):
+                    continue
+            
             # Calculate available inventory
             inventory = 0
             for mov in movements:
