@@ -563,7 +563,8 @@ def viewProduct():
         servings = int(request.form.get("servings", 1))
         points = int(request.form.get("points", 1))
         nutrition_score = int(request.form.get("nutrition_score", 50))
-        
+        image_url = request.form.get("image_url", "")
+
         # Handle dietary indicators
         dietary_indicators = []
         if request.form.get("vegan"): dietary_indicators.append("vegan")
@@ -593,7 +594,8 @@ def viewProduct():
             upc=upc,
             servings=servings,
             points=points,
-            nutrition_score=nutrition_score
+            nutrition_score=nutrition_score,
+            image_url=image_url
         )
         new_product.set_dietary_indicators(dietary_indicators)
         new_product.set_allergens(allergens)
@@ -635,7 +637,8 @@ def updateProduct(name):
         servings = int(request.form.get("servings", 1))
         points = int(request.form.get("points", 1))
         nutrition_score = int(request.form.get("nutrition_score", 50))
-        
+        image_url = request.form.get("image_url", "")
+
         # Handle dietary indicators
         dietary_indicators = []
         if request.form.get("vegan"): dietary_indicators.append("vegan")
@@ -665,6 +668,7 @@ def updateProduct(name):
         product.servings = servings
         product.points = points
         product.nutrition_score = nutrition_score
+        product.image_url = image_url
         product.set_dietary_indicators(dietary_indicators)
         product.set_allergens(allergens)
 

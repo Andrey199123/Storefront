@@ -109,13 +109,24 @@
             background: white;
             border: 3px solid {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %};
             border-radius: 8px;
-            padding: 15px;
+            padding: 0;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
         }
         .item-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .item-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: #f0f0f0;
+            display: block;
+        }
+        .item-content {
+            padding: 15px;
         }
         .item-name {
             font-size: 18px;
@@ -266,26 +277,33 @@
                 <div class="items-grid">
                     {% for product in products %}
                         <div class="item-card" data-dietary="{{ product.dietary_indicators|join(',') }}">
-                            <div class="item-name">{{ product.product_id }}</div>
-                            <div class="item-description">{{ product.description }}</div>
-                            <div class="item-details">
-                                <span>Servings: {{ product.servings }}</span>
-                                <span>Points: {{ product.points }}</span>
-                            </div>
-                            <div class="item-details">
-                                <span>Available: {{ product.available_qty }}</span>
-                                <span class="nutrition-score {% if product.nutrition_score >= 70 %}score-high{% elif product.nutrition_score >= 40 %}score-medium{% else %}score-low{% endif %}">
-                                    Score: {{ product.nutrition_score }}
-                                </span>
-                            </div>
-                            {% if product.dietary_indicators|length > 0 %}
-                                <div class="dietary-indicators">
-                                    {% for indicator in product.dietary_indicators %}
-                                        <span class="dietary-badge">{{ indicator }}</span>
-                                    {% endfor %}
-                                </div>
+                            {% if product.image_url %}
+                                <img src="{{ product.image_url }}" alt="{{ product.product_id }}" class="item-image">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400" alt="{{ product.product_id }}" class="item-image">
                             {% endif %}
-                            <button class="add-btn" onclick="addToCart('{{ product.product_id }}')">Add to Cart</button>
+                            <div class="item-content">
+                                <div class="item-name">{{ product.product_id }}</div>
+                                <div class="item-description">{{ product.description }}</div>
+                                <div class="item-details">
+                                    <span>Servings: {{ product.servings }}</span>
+                                    <span>Points: {{ product.points }}</span>
+                                </div>
+                                <div class="item-details">
+                                    <span>Available: {{ product.available_qty }}</span>
+                                    <span class="nutrition-score {% if product.nutrition_score >= 70 %}score-high{% elif product.nutrition_score >= 40 %}score-medium{% else %}score-low{% endif %}">
+                                        Score: {{ product.nutrition_score }}
+                                    </span>
+                                </div>
+                                {% if product.dietary_indicators|length > 0 %}
+                                    <div class="dietary-indicators">
+                                        {% for indicator in product.dietary_indicators %}
+                                            <span class="dietary-badge">{{ indicator }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <button class="add-btn" onclick="addToCart('{{ product.product_id }}')">Add to Cart</button>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
