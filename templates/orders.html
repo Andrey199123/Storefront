@@ -61,7 +61,11 @@
                                     </script>
                                 </td>
                                 <td>{{ order.total_points }}</td>
-                                <td>{{ order.fulfillment_method }}</td>
+                                <td>{{ order.fulfillment_method }}
+                                    {% if order.satellite_location %}
+                                        <br><small class="text-muted">📍 {{ order.satellite_location }}</small>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <select class="form-control form-control-sm" onchange="updateStatus({{ order.order_id }}, this.value)">
                                         <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
@@ -72,6 +76,21 @@
                                 </td>
                                 <td>
                                     <a href="/clients/{{ order.client_id }}" class="btn btn-sm btn-secondary">View Client</a>
+                                    {% if order.note_to_staff %}
+                                    <button class="btn btn-sm btn-warning mt-1" onclick="showNote{{ order.order_id }}()" title="View Note">
+                                        📝 Note
+                                    </button>
+                                    <div id="note{{ order.order_id }}" style="display:none; margin-top:10px; padding: 10px; background: #fff3cd; border-radius: 5px;">
+                                        <strong>Client Note:</strong><br>
+                                        {{ order.note_to_staff }}
+                                    </div>
+                                    <script>
+                                        function showNote{{ order.order_id }}() {
+                                            var div = document.getElementById('note{{ order.order_id }}');
+                                            div.style.display = div.style.display === 'none' ? 'block' : 'none';
+                                        }
+                                    </script>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}

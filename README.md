@@ -1,61 +1,155 @@
-## Inspiration
-The local small businesses, a food pantry, and a thrift store are currently spending thousands of dollars a month to manage their inventory, which is putting them at risk of going out of business. This past school year, our school offered a solution for inventory management at a lower cost. However, due to the limited time before the school year ended, we couldn't complete the project. It makes perfect sense to develop it sooner rather than later, so we can present a working prototype or product to the local food pantry and thrift store to help them stay in business.
+# SmartChoice Pantry System
 
-## Setup
+A comprehensive food pantry management system built with Flask and SQLite, featuring client shopping portals, inventory management, and dietary filtering.
 
-### Environment Variables
-1. Copy `.env.example` to `.env`
-2. Generate a secure secret key: `python3 -c "import secrets; print(secrets.token_hex(32))"`
-3. Update `SECRET_KEY` in `.env` with your generated key
+## Features
 
-### Database
-The system now uses SQLite database instead of PKL files for better performance and reliability.
+### Staff Dashboard
+- **Product Management**: Add, edit, and delete products with categories, pricing, nutrition scores, dietary indicators, and allergen information
+- **Location Management**: Manage storage locations (Pantry, Warehouse, Refrigerator, etc.)
+- **Inventory Movements**: Track product movements between locations
+- **Order Management**: View and update order statuses
+- **Client Management**: Add and manage client profiles
 
-### Installation
+### Reports
+- **Product Balance Report**: View current inventory levels across all locations
+- **Revenue Report**: Track sales and revenue with printable receipts
+
+### Client Shopping Portal
+- **Points-Based System**: Clients shop using allocated points per visit
+- **MyPlate Categories**: Products organized by Fruits, Vegetables, Dairy, Proteins, Grains, and Other
+- **Special Diet Filtering**: Filter products by dietary preferences:
+  - 🌱 Vegan
+  - 🥕 Vegetarian
+  - 🌾 Gluten-Free
+  - 🥛 Dairy-Free
+  - 🧂 Low Sodium
+  - 🍬 Sugar-Free
+- **Multiple Fulfillment Options**: Pickup, Curbside, Delivery, Locker, Satellite locations
+- **Nutrition Scoring**: Products display nutrition scores (0-100)
+
+### Kiosk Mode
+- Touch-friendly interface for in-person shopping
+- Large buttons and simplified navigation
+- Quick checkout process
+
+## Tech Stack
+- **Backend**: Python, Flask, SQLAlchemy
+- **Database**: SQLite
+- **Frontend**: HTML, CSS, JavaScript, Bootstrap (MDB)
+- **Authentication**: Werkzeug password hashing
+
+## Installation
+
+### Prerequisites
+- Python 3.8+
+- pip
+
+### Setup
+
+1. Clone the repository:
 ```bash
-pip install -r requirements.txt
-python3 setup_sample_data_sql.py  # Setup sample data
-python3 add_inventory.py          # Add inventory
-python3 main.py                   # Run the application
+git clone https://github.com/Andrey199123/Storefront.git
+cd Storefront
 ```
 
-## What It Does
-**Login Page**  
-The store owner can log in with their credentials and create an account. After successfully logging in, they are redirected to the dashboard.
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-**Dashboard**  
-The dashboard displays the products in the inventory, which can be updated or deleted. Below the products, the locations are listed, representing store locations with their names, which can also be updated or deleted.
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env and set your SECRET_KEY
+# Generate one with: python3 -c "import secrets; print(secrets.token_hex(32))"
+```
 
-**Products**  
-The products section allows the store owner to create a new product and assign a purchase and selling price to it. The product can be updated or deleted later.
+4. Initialize the database with sample data:
+```bash
+python3 setup_sample_data_sql.py
+python3 add_inventory.py
+python3 add_product_images_sql.py  # Optional: Add product images
+```
 
-**Locations**  
-The locations section allows the store owner to create a new store location that can be updated or deleted. For simplicity, customers are treated as locations.
+5. Run the application:
+```bash
+python3 main.py
+```
 
-**Movements**  
-The movements section is designed for the user to move products to/from stores to efficiently manage their inventory. Like the products and locations, movements can be updated.
+6. Access the application:
+- Staff Login: http://127.0.0.1:5000/
+- Client Shopping: http://127.0.0.1:5000/shop
+- Kiosk Mode: http://127.0.0.1:5000/kiosk
 
-**Product Balance Report**  
-This section displays the current inventory of products with their associated locations.
+### Default Credentials
+- **Admin**: username: `admin`, password: `admin123`
+- **Test Clients**: `C00001` (John Smith), `C00002` (Maria Garcia)
 
-**Revenue Report**  
-This section shows how much money the store owner has made from selling the products. Additionally, it displays the products and the quantities sold. The store owner can print a receipt of the revenue made.
+## Project Structure
+```
+├── main.py                    # Main Flask application
+├── database.py                # SQLAlchemy models
+├── requirements.txt           # Python dependencies
+├── setup_sample_data_sql.py   # Database initialization script
+├── add_inventory.py           # Inventory setup script
+├── add_product_images_sql.py  # Product images script
+├── templates/                 # HTML templates
+│   ├── base.html
+│   ├── login.html
+│   ├── index.html
+│   ├── products.html
+│   ├── shop_items.html
+│   ├── shop_categories.html
+│   └── ...
+├── static/
+│   ├── css/
+│   └── js/
+└── instance/
+    └── pantry.db             # SQLite database (created on first run)
+```
 
-**Add to Cart Feature**  
-The store owner enters the products the customer chose to buy. They can select the available products in their respective locations and their quantities. The price and tax are dynamically updated each time a product is selected or its quantity is changed. At the bottom, there is a print receipt feature like in the revenue report section and a Checkout button.
+## API Endpoints
 
-**Client Shopping Portal**  
-Clients can log in with their Client ID and shop for products using a points-based system. The shopping interface includes:
-- MyPlate category navigation (Fruits, Vegetables, Dairy, Proteins, Grains)
-- Points-based ordering system
-- Multiple fulfillment options (Pickup, Curbside, Delivery, Locker, Satellite)
-- **Special Diet Filtering** - Filter products by dietary preferences (Vegan, Vegetarian, Gluten-Free, Dairy-Free, Low Sodium, Sugar-Free)
+### Authentication
+- `GET/POST /` - Login/Register page
+- `GET /shop` - Client login
+- `GET /kiosk` - Kiosk mode login
 
-**Kiosk Mode**  
-A touch-friendly kiosk interface for in-person shopping with large buttons and simplified navigation.
+### Staff Routes
+- `GET /home` - Dashboard
+- `GET/POST /products/` - Product management
+- `GET/POST /locations/` - Location management
+- `GET/POST /movements/` - Inventory movements
+- `GET/POST /clients/` - Client management
+- `GET /orders/` - Order management
+- `GET /product-balance/` - Inventory report
+- `GET /revenue-report/` - Revenue report
 
-## How We Built It
-We built the website using the Flask framework in Python. The webpages were created in HTML, and Flask was used for URL routing and the entire backend. To create a satisfying dynamic webpage, we used JavaScript and Ajax to facilitate communication between the frontend and backend. The storage of products, movements, and locations is done in PKL files.
+### Client Shopping
+- `GET /shop/categories` - Category selection
+- `GET /shop/category/<category>` - Browse products (supports `?diet=` filter)
+- `POST /shop/add-to-cart` - Add item to cart
+- `POST /shop/remove-from-cart` - Remove item from cart
+- `GET/POST /shop/checkout` - Checkout process
 
-## What's Next for StoreSync Inventory Manager
-We may transition from PKL files to using SQL databases for better security. We also plan to add payment forms and images associated with products. Additionally, we aim to host the server and purchase a domain name for the website to make it accessible globally.
+## Database Schema
+
+### Main Tables
+- **users** - Staff accounts
+- **products** - Product catalog with dietary info
+- **clients** - Client profiles
+- **locations** - Storage locations
+- **movements** - Inventory movements
+- **orders** - Client orders
+- **counter** - ID generation
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## License
+This project is open source and available for educational and non-commercial use.

@@ -6,14 +6,22 @@ from datetime import datetime, timedelta
 import os
 import re
 import pytz
+import uuid
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from database import db, User, Product as DBProduct, Client as DBClient, Location as DBLocation
-from database import Movement as DBMovement, Order as DBOrder, Appointment as DBAppointment, Counter
+from database import Movement as DBMovement, Order as DBOrder, Appointment as DBAppointment, Counter, StaffMessage
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pantry.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = 'static/images/products'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Initialize database
 db.init_app(app)
@@ -94,6 +102,8 @@ class OrderProxy:
         self.items = db_order.get_items()
         self.total_points = db_order.total_points
         self.fulfillment_method = db_order.fulfillment_method
+        self.satellite_location = db_order.satellite_location
+        self.note_to_staff = db_order.note_to_staff
         self.status = db_order.status
         self.pickup_time = db_order.pickup_time
         self.created_at = db_order.created_at
@@ -314,6 +324,8 @@ def shop_checkout():
     if request.method == 'POST':
         fulfillment_method = request.form.get('fulfillment_method')
         pickup_time = request.form.get('pickup_time')
+        satellite_location = request.form.get('satellite_location', '')
+        note_to_staff = request.form.get('note_to_staff', '')
         
         # Create order
         order_id = Counter.get_next_id()
@@ -324,6 +336,8 @@ def shop_checkout():
             client_id=client_id,
             total_points=total_points,
             fulfillment_method=fulfillment_method,
+            satellite_location=satellite_location if fulfillment_method == 'Satellite' else None,
+            note_to_staff=note_to_staff if note_to_staff.strip() else None,
             pickup_time=pickup_time
         )
         order.set_items(cart)
@@ -353,6 +367,102 @@ def shop_checkout():
     return render_template('shop_checkout.html', client=client, cart=cart)
 
 
+@app.route('/shop/search', methods=['GET'])
+def shop_search():
+    """Search for products across all categories"""
+    if 'client_id' not in session:
+        return redirect('/shop')
+    
+    client_id = session['client_id']
+    db_client = DBClient.query.filter_by(client_id=client_id).first()
+    client = ClientProxy(db_client)
+    
+    query = request.args.get('q', '').strip().lower()
+    
+    if not query:
+        return redirect('/shop/categories')
+    
+    # Search products by name and description
+    db_products = DBProduct.query.filter(
+        (DBProduct.product_id.ilike(f'%{query}%')) | 
+        (DBProduct.description.ilike(f'%{query}%'))
+    ).all()
+    
+    search_results = []
+    for db_product in db_products:
+        product = ProductProxy(db_product)
+        
+        # Calculate available inventory
+        inventory = 0
+        movements = DBMovement.query.filter_by(product_id=product.product_id).all()
+        for mov in movements:
+            if mov.to_location and mov.to_location != 'Customer':
+                inventory += int(mov.qty)
+            if mov.from_location and mov.from_location != 'Customer':
+                inventory -= int(mov.qty)
+        
+        if inventory > 0:
+            product.available_qty = inventory
+            search_results.append(product)
+    
+    # Sort by nutrition score
+    search_results.sort(key=lambda x: x.nutrition_score, reverse=True)
+    
+    cart = session.get('cart', [])
+    points_used = sum(item['points'] * item['quantity'] for item in cart)
+    points_remaining = client.points_per_visit - points_used
+    
+    return render_template('shop_search.html', query=query, products=search_results,
+                         client=client, cart=cart, points_remaining=points_remaining)
+
+
+@app.route('/shop/healthier-swap/<product_id>', methods=['GET'])
+def get_healthier_swap(product_id):
+    """Get healthier alternatives for a product"""
+    if 'client_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    
+    # Get the current product
+    current_product = DBProduct.query.filter_by(product_id=product_id).first()
+    if not current_product:
+        return jsonify({'success': False, 'error': 'Product not found'})
+    
+    # Find products in the same category with higher nutrition score
+    alternatives = DBProduct.query.filter(
+        DBProduct.category == current_product.category,
+        DBProduct.nutrition_score > current_product.nutrition_score,
+        DBProduct.product_id != product_id
+    ).order_by(DBProduct.nutrition_score.desc()).limit(3).all()
+    
+    # Filter to only available products
+    available_alternatives = []
+    for alt in alternatives:
+        inventory = 0
+        movements = DBMovement.query.filter_by(product_id=alt.product_id).all()
+        for mov in movements:
+            if mov.to_location and mov.to_location != 'Customer':
+                inventory += int(mov.qty)
+            if mov.from_location and mov.from_location != 'Customer':
+                inventory -= int(mov.qty)
+        
+        if inventory > 0:
+            available_alternatives.append({
+                'product_id': alt.product_id,
+                'description': alt.description,
+                'nutrition_score': alt.nutrition_score,
+                'points': alt.points,
+                'dietary_indicators': alt.get_dietary_indicators(),
+                'image_url': alt.image_url or 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400',
+                'available_qty': inventory
+            })
+    
+    return jsonify({
+        'success': True,
+        'current_score': current_product.nutrition_score,
+        'alternatives': available_alternatives
+    })
+
+
 @app.route('/shop/order-confirmation/<int:order_id>')
 def order_confirmation(order_id):
     """Order confirmation page"""
@@ -379,6 +489,61 @@ def client_logout():
     return redirect('/shop')
 
 
+@app.route('/shop/message-staff', methods=['POST'])
+def message_staff():
+    """Send a message to staff"""
+    if 'client_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    
+    message_text = request.json.get('message', '').strip()
+    if not message_text:
+        return jsonify({'success': False, 'error': 'Message cannot be empty'})
+    
+    message_id = Counter.get_next_id()
+    new_message = StaffMessage(
+        message_id=message_id,
+        client_id=session['client_id'],
+        message=message_text
+    )
+    
+    try:
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Message sent to staff!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/staff-messages/', methods=['GET'])
+def view_staff_messages():
+    """View all client messages (staff only)"""
+    if 'user_id' not in session:
+        return redirect('/')
+    
+    messages = StaffMessage.query.order_by(StaffMessage.created_at.desc()).all()
+    
+    # Get client names
+    client_lookup = {c.client_id: c.name for c in DBClient.query.all()}
+    
+    return render_template('staff_messages.html', messages=messages, client_lookup=client_lookup)
+
+
+@app.route('/staff-messages/<int:message_id>/mark-read', methods=['POST'])
+def mark_message_read(message_id):
+    """Mark a message as read"""
+    if 'user_id' not in session:
+        return jsonify({'success': False})
+    
+    message = StaffMessage.query.filter_by(message_id=message_id).first()
+    if message:
+        message.is_read = True
+        db.session.commit()
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False})
+
+
 @app.route('/home', methods=["POST", "GET"])
 def index():
     """Staff dashboard"""
@@ -400,9 +565,12 @@ def index():
     # Get pending orders count
     pending_orders = DBOrder.query.filter_by(status='Pending').count()
     
+    # Get unread messages count
+    unread_messages = StaffMessage.query.filter_by(is_read=False).count()
+    
     return render_template("index.html", products=products, locations=locations,
                          clients=clients, recent_orders=recent_orders, 
-                         pending_orders=pending_orders)
+                         pending_orders=pending_orders, unread_messages=unread_messages)
 
 
 @app.route('/clients/', methods=["POST", "GET"])
@@ -564,6 +732,17 @@ def viewProduct():
         points = int(request.form.get("points", 1))
         nutrition_score = int(request.form.get("nutrition_score", 50))
         image_url = request.form.get("image_url", "")
+        
+        # Handle file upload
+        if 'product_image' in request.files:
+            file = request.files['product_image']
+            if file and file.filename and allowed_file(file.filename):
+                # Generate unique filename
+                ext = file.filename.rsplit('.', 1)[1].lower()
+                filename = f"{uuid.uuid4().hex}.{ext}"
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                image_url = f"/static/images/products/{filename}"
 
         # Handle dietary indicators
         dietary_indicators = []
@@ -638,6 +817,17 @@ def updateProduct(name):
         points = int(request.form.get("points", 1))
         nutrition_score = int(request.form.get("nutrition_score", 50))
         image_url = request.form.get("image_url", "")
+        
+        # Handle file upload
+        if 'product_image' in request.files:
+            file = request.files['product_image']
+            if file and file.filename and allowed_file(file.filename):
+                # Generate unique filename
+                ext = file.filename.rsplit('.', 1)[1].lower()
+                filename = f"{uuid.uuid4().hex}.{ext}"
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                image_url = f"/static/images/products/{filename}"
 
         # Handle dietary indicators
         dietary_indicators = []

@@ -114,16 +114,28 @@
         
         <div class="fulfillment-info">
             <strong>Fulfillment Method:</strong> {{ order.fulfillment_method }}<br>
+            {% if order.satellite_location %}
+                <strong>Satellite Location:</strong> {{ order.satellite_location }}<br>
+            {% endif %}
             {% if order.pickup_time %}
                 <strong>Scheduled Time:</strong> {{ order.pickup_time }}
             {% endif %}
         </div>
+        
+        {% if order.note_to_staff %}
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107; text-align: left;">
+            <strong style="color: #856404;">📝 Your Note to Staff:</strong><br>
+            <span style="color: #856404;">{{ order.note_to_staff }}</span>
+        </div>
+        {% endif %}
         
         <p style="color: #666; margin: 20px 0;">
             {% if order.fulfillment_method == 'Locker' %}
                 You will receive a text message with your locker code and pickup instructions.
             {% elif order.fulfillment_method == 'Delivery' %}
                 Your order will be delivered to your registered address. You'll receive updates via text.
+            {% elif order.fulfillment_method == 'Satellite' %}
+                Your order will be available at {{ order.satellite_location or 'the selected satellite location' }}. You'll receive a notification when it's ready.
             {% else %}
                 Please bring your order number when picking up your items.
             {% endif %}

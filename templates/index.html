@@ -61,6 +61,20 @@
         </div>
         
         <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="card {% if unread_messages > 0 %}bg-danger{% else %}bg-secondary{% endif %} text-white mb-4">
+                    <div class="card-body">
+                        <h4>{{ unread_messages }}</h4>
+                        <div>Unread Messages</div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="/staff-messages/">View Messages</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
             <div class="col-lg-6">
                 <div class="card mb-4">
                     <div class="card-header">

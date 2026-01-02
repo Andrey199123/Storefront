@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Client Messages - SmartChoice</title>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Client Messages</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/home">Dashboard</a></li>
+            <li class="breadcrumb-item active">Messages</li>
+        </ol>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-envelope mr-1"></i>
+                Messages from Clients
+            </div>
+            <div class="card-body">
+                {% if messages|length < 1 %}
+                <div class="text-center py-5">
+                    <h4 class="text-muted">No messages yet</h4>
+                    <p class="text-muted">Client messages will appear here</p>
+                </div>
+                {% else %}
+                <div class="list-group">
+                    {% for msg in messages %}
+                    <div class="list-group-item {% if not msg.is_read %}list-group-item-warning{% endif %}" id="msg-{{ msg.message_id }}">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div style="flex: 1;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h5 class="mb-0 mr-3">
+                                        {{ client_lookup.get(msg.client_id, msg.client_id) }}
+                                    </h5>
+                                    {% if not msg.is_read %}
+                                    <span class="badge badge-warning">New</span>
+                                    {% endif %}
+                                </div>
+                                <p class="mb-2" style="white-space: pre-wrap;">{{ msg.message }}</p>
+                                <small class="text-muted">
+                                    {{ msg.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                    | Client ID: {{ msg.client_id }}
+                                </small>
+                            </div>
+                            <div>
+                                {% if not msg.is_read %}
+                                <button class="btn btn-sm btn-success" onclick="markRead({{ msg.message_id }})">
+                                    Mark as Read
+                                </button>
+                                {% else %}
+                                <span class="badge badge-success">Read</span>
+                                {% endif %}
+                                <a href="/clients/{{ msg.client_id }}" class="btn btn-sm btn-info ml-1">
+                                    View Client
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function markRead(messageId) {
+        fetch('/staff-messages/' + messageId + '/mark-read', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}

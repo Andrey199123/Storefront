@@ -180,6 +180,8 @@ class Order(db.Model):
     items = db.Column(db.Text, nullable=False)  # JSON array of items
     total_points = db.Column(db.Integer, nullable=False)
     fulfillment_method = db.Column(db.String(100), default='Pickup')
+    satellite_location = db.Column(db.String(200), nullable=True)  # For satellite pickup
+    note_to_staff = db.Column(db.Text, nullable=True)  # Client notes for staff
     status = db.Column(db.String(50), default='Pending')
     pickup_time = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=get_eastern_time)
@@ -213,6 +215,20 @@ class Appointment(db.Model):
     
     def __repr__(self):
         return f'<Appointment {self.appointment_id}>'
+
+
+class StaffMessage(db.Model):
+    __tablename__ = 'staff_messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, unique=True, nullable=False)
+    client_id = db.Column(db.String(100), db.ForeignKey('clients.client_id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=get_eastern_time)
+    
+    def __repr__(self):
+        return f'<StaffMessage {self.message_id}>'
 
 
 class Survey(db.Model):

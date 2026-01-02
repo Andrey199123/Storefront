@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartChoice™ - {{ category }}</title>
+    <title>SmartChoice™ - Search Results</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.min.css')}}">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -24,50 +24,6 @@
             padding: 20px;
             overflow-y: auto;
         }
-        .filter-section {
-            background: #f9f9f9;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-        }
-        .filter-section h3 {
-            margin: 0 0 12px 0;
-            font-size: 16px;
-            color: #333;
-        }
-        .filter-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .filter-btn {
-            padding: 8px 16px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        .filter-btn:hover {
-            border-color: #667eea;
-        }
-        .filter-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        .clear-filters {
-            padding: 8px 16px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: 10px;
-        }
         .cart-panel {
             flex: 0 0 40%;
             background: #fafafa;
@@ -77,7 +33,7 @@
             flex-direction: column;
         }
         .header {
-            background: {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %};
+            background: #667eea;
             color: white;
             padding: 15px 20px;
             margin: -20px -20px 20px -20px;
@@ -99,6 +55,20 @@
             text-decoration: none;
             display: inline-block;
         }
+        .search-info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .search-info h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        .search-info p {
+            margin: 0;
+            color: #666;
+        }
         .items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -107,7 +77,7 @@
         }
         .item-card {
             background: white;
-            border: 3px solid {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %};
+            border: 3px solid #667eea;
             border-radius: 8px;
             padding: 0;
             cursor: pointer;
@@ -134,6 +104,20 @@
             color: #333;
             margin-bottom: 8px;
         }
+        .item-category {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: white;
+            margin-bottom: 8px;
+        }
+        .cat-Fruits { background: #C62828; }
+        .cat-Vegetables { background: #2E7D32; }
+        .cat-Dairy { background: #1976D2; }
+        .cat-Proteins { background: #7B1FA2; }
+        .cat-Grains { background: #F9A825; }
+        .cat-Other { background: #616161; }
         .item-description {
             font-size: 13px;
             color: #666;
@@ -175,7 +159,7 @@
         .add-btn {
             width: 100%;
             padding: 10px;
-            background: {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %};
+            background: #667eea;
             color: white;
             border: none;
             border-radius: 5px;
@@ -245,44 +229,42 @@
             color: white;
             grid-column: 1 / -1;
         }
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="items-panel">
             <div class="header">
-                <h2>{{ category }}</h2>
+                <h2>🔍 Search Results</h2>
                 <a href="/shop/categories" class="back-btn">← Back to Categories</a>
             </div>
             
-            <div class="filter-section">
-                <h3>🥗 Filter by Special Diet</h3>
-                <div class="filter-options">
-                    <button class="filter-btn" data-filter="vegan" onclick="toggleFilter(this)">🌱 Vegan</button>
-                    <button class="filter-btn" data-filter="vegetarian" onclick="toggleFilter(this)">🥕 Vegetarian</button>
-                    <button class="filter-btn" data-filter="gluten-free" onclick="toggleFilter(this)">🌾 Gluten-Free</button>
-                    <button class="filter-btn" data-filter="dairy-free" onclick="toggleFilter(this)">🥛 Dairy-Free</button>
-                    <button class="filter-btn" data-filter="low-sodium" onclick="toggleFilter(this)">🧂 Low Sodium</button>
-                    <button class="filter-btn" data-filter="sugar-free" onclick="toggleFilter(this)">🍬 Sugar-Free</button>
-                    <button class="clear-filters" onclick="clearFilters()">Clear All</button>
-                </div>
+            <div class="search-info">
+                <h3>Results for "{{ query }}"</h3>
+                <p>Found {{ products|length }} item(s)</p>
             </div>
             
             {% if products|length == 0 %}
-                <div style="text-align: center; padding: 60px 20px; color: #999;">
-                    <h3>No items available in this category</h3>
-                    <p>Please check back later or select another category</p>
+                <div class="no-results">
+                    <h3>No items found</h3>
+                    <p>Try a different search term or browse categories</p>
                 </div>
             {% else %}
                 <div class="items-grid">
                     {% for product in products %}
-                        <div class="item-card" data-dietary="{{ product.dietary_indicators|join(',') }}">
+                        <div class="item-card">
                             {% if product.image_url %}
                                 <img src="{{ product.image_url }}" alt="{{ product.product_id }}" class="item-image">
                             {% else %}
                                 <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400" alt="{{ product.product_id }}" class="item-image">
                             {% endif %}
                             <div class="item-content">
+                                <span class="item-category cat-{{ product.category }}">{{ product.category }}</span>
                                 <div class="item-name">{{ product.product_id }}</div>
                                 <div class="item-description">{{ product.description }}</div>
                                 <div class="item-details">
@@ -302,14 +284,7 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <div style="display: flex; gap: 8px; margin-top: 10px;">
-                                    <button class="add-btn" style="flex: 1;" onclick="addToCart('{{ product.product_id }}')">Add to Cart</button>
-                                    {% if product.nutrition_score < 70 %}
-                                    <button class="add-btn" style="width: 40px; flex: none; background: #FF9800; padding: 10px;" onclick="showHealthierSwap('{{ product.product_id }}')" title="Find healthier options">
-                                        🔄
-                                    </button>
-                                    {% endif %}
-                                </div>
+                                <button class="add-btn" onclick="addToCart('{{ product.product_id }}')">Add to Cart</button>
                             </div>
                         </div>
                     {% endfor %}
@@ -351,45 +326,6 @@
     </div>
     
     <script>
-        let activeFilters = [];
-        
-        function toggleFilter(button) {
-            const filter = button.getAttribute('data-filter');
-            button.classList.toggle('active');
-            
-            if (activeFilters.includes(filter)) {
-                activeFilters = activeFilters.filter(f => f !== filter);
-            } else {
-                activeFilters.push(filter);
-            }
-            
-            applyFilters();
-        }
-        
-        function clearFilters() {
-            activeFilters = [];
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            applyFilters();
-        }
-        
-        function applyFilters() {
-            const items = document.querySelectorAll('.item-card');
-            
-            items.forEach(item => {
-                const itemDietary = item.getAttribute('data-dietary').split(',').filter(d => d);
-                
-                if (activeFilters.length === 0) {
-                    item.style.display = 'block';
-                } else {
-                    // Check if item has ALL active filters (AND logic)
-                    const hasAllFilters = activeFilters.every(filter => itemDietary.includes(filter));
-                    item.style.display = hasAllFilters ? 'block' : 'none';
-                }
-            });
-        }
-        
         function addToCart(productId) {
             fetch('/shop/add-to-cart', {
                 method: 'POST',
@@ -403,71 +339,6 @@
                       alert('Error adding item to cart');
                   }
               });
-        }
-        
-        function showHealthierSwap(productId) {
-            fetch('/shop/healthier-swap/' + productId)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.alternatives.length > 0) {
-                        showSwapModal(productId, data.current_score, data.alternatives);
-                    } else {
-                        alert('No healthier alternatives available in this category.');
-                    }
-                });
-        }
-        
-        function showSwapModal(currentProduct, currentScore, alternatives) {
-            // Create modal
-            const modal = document.createElement('div');
-            modal.id = 'swap-modal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;';
-            
-            let alternativesHtml = alternatives.map(alt => `
-                <div style="background: white; border: 2px solid #4CAF50; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <img src="${alt.image_url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px;">
-                        <div style="flex: 1;">
-                            <div style="font-weight: bold; font-size: 16px; color: #333;">${alt.product_id}</div>
-                            <div style="font-size: 13px; color: #666; margin: 5px 0;">${alt.description}</div>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <span style="background: #4CAF50; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Score: ${alt.nutrition_score}</span>
-                                <span style="color: #666; font-size: 12px;">Points: ${alt.points}</span>
-                                <span style="color: #666; font-size: 12px;">Available: ${alt.available_qty}</span>
-                            </div>
-                        </div>
-                        <button onclick="addToCart('${alt.product_id}'); closeSwapModal();" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">
-                            Add
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-            
-            modal.innerHTML = `
-                <div style="background: white; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-                    <div style="background: #FF9800; color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-                        <h3 style="margin: 0;">🔄 Healthier Alternatives</h3>
-                        <p style="margin: 5px 0 0 0; opacity: 0.9;">Current item score: ${currentScore}</p>
-                    </div>
-                    <div style="padding: 20px;">
-                        <p style="color: #666; margin-bottom: 15px;">Consider these healthier options with higher nutrition scores:</p>
-                        ${alternativesHtml}
-                        <button onclick="closeSwapModal()" style="width: 100%; padding: 12px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-                            Keep Original Item
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            modal.onclick = function(e) {
-                if (e.target === modal) closeSwapModal();
-            };
-        }
-        
-        function closeSwapModal() {
-            const modal = document.getElementById('swap-modal');
-            if (modal) modal.remove();
         }
     </script>
 </body>

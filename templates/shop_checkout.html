@@ -185,6 +185,19 @@
                     <div class="title">📍 Satellite Pickup Location</div>
                     <div class="description">Pick up at a community location near you</div>
                 </label>
+                
+                <!-- Satellite Location Selector (shown when Satellite is selected) -->
+                <div id="satellite-locations" style="display: none; margin-top: 15px; padding: 15px; background: #f5f7ff; border-radius: 8px; border: 2px solid #667eea;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Select Satellite Location:</label>
+                    <select name="satellite_location" id="satellite_location" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px;">
+                        <option value="">-- Select a location --</option>
+                        <option value="Community Center - Downtown">Community Center - Downtown</option>
+                        <option value="Library - North Branch">Library - North Branch</option>
+                        <option value="Church - St. Mary's">Church - St. Mary's</option>
+                        <option value="School - Lincoln Elementary">School - Lincoln Elementary</option>
+                        <option value="Senior Center - Westside">Senior Center - Westside</option>
+                    </select>
+                </div>
             </div>
             
             <div class="form-group">
@@ -192,9 +205,30 @@
                 <input type="datetime-local" id="pickup_time" name="pickup_time">
             </div>
             
+            <div class="form-group">
+                <label for="note_to_staff">📝 Note to Staff (optional):</label>
+                <textarea id="note_to_staff" name="note_to_staff" rows="3" 
+                          placeholder="Any special requests, dietary needs, or messages for our staff..."
+                          style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; resize: vertical;"></textarea>
+            </div>
+            
             <button type="submit" class="btn-submit">Place Order</button>
             <a href="/shop/categories" class="btn-back">← Back to Shopping</a>
         </form>
     </div>
+    
+    <script>
+        // Show/hide satellite location selector based on fulfillment method
+        document.querySelectorAll('input[name="fulfillment_method"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const satelliteLocations = document.getElementById('satellite-locations');
+                if (this.value === 'Satellite') {
+                    satelliteLocations.style.display = 'block';
+                } else {
+                    satelliteLocations.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
