@@ -66,6 +66,9 @@
                     <br>
                     <button type="submit" class="btn btn-primary">Update Client</button>
                     <a href="/clients/" class="btn btn-secondary">Cancel</a>
+                    <form action="/clients/{{ client.client_id }}/delete" method="POST" style="display: inline; margin-left: 10px;" onsubmit="return confirm('Delete client {{ client.name }}? This will also delete their orders and messages.');">
+                        <button type="submit" class="btn btn-danger">Delete Client</button>
+                    </form>
                 </form>
             </div>
         </div>

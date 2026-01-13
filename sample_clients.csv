@@ -1,0 +1,11 @@
+client_id,name,email,phone,household_size,language,points_per_visit
+C10001,Alice Johnson,alice@email.com,555-111-2222,2,English,100
+C10002,Bob Williams,bob@email.com,555-333-4444,4,English,150
+C10003,Carlos Rodriguez,carlos@email.com,555-555-6666,3,Spanish,100
+C10004,Diana Chen,diana@email.com,555-777-8888,1,Chinese,100
+C10005,Elena Petrova,elena@email.com,555-999-0000,5,Russian,200
+C10006,Frank Miller,frank@email.com,555-123-7890,2,English,100
+C10007,Grace Kim,grace@email.com,555-456-1234,3,English,125
+C10008,Hassan Ahmed,hassan@email.com,555-789-4561,4,Arabic,150
+C10009,Isabella Santos,isabella@email.com,555-321-6547,2,Spanish,100
+C10010,James O'Brien,james@email.com,555-654-9873,1,English,100

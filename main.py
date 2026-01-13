@@ -613,6 +613,131 @@ def view_clients():
     return render_template("clients.html", clients=clients)
 
 
+@app.route('/clients/bulk-upload', methods=['POST'])
+def bulk_upload_clients():
+    """Bulk upload clients from CSV file"""
+    if 'user_id' not in session:
+        return redirect('/')
+    
+    if 'csv_file' not in request.files:
+        flash('No file uploaded')
+        return redirect('/clients/')
+    
+    file = request.files['csv_file']
+    if file.filename == '':
+        flash('No file selected')
+        return redirect('/clients/')
+    
+    if not file.filename.endswith('.csv'):
+        flash('Please upload a CSV file')
+        return redirect('/clients/')
+    
+    import csv
+    import io
+    
+    try:
+        # Read CSV content
+        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        reader = csv.DictReader(stream)
+        
+        # Normalize column names (lowercase, strip whitespace)
+        reader.fieldnames = [name.lower().strip() for name in reader.fieldnames]
+        
+        added = 0
+        skipped = 0
+        errors = []
+        
+        for row in reader:
+            # Get values with flexible column names
+            client_id = row.get('client_id', '').strip()
+            name = row.get('name', '').strip()
+            email = row.get('email', '').strip()
+            phone = row.get('phone', '').strip()
+            household_size = row.get('household_size', '1').strip()
+            language = row.get('language', 'English').strip()
+            points_per_visit = row.get('points_per_visit', '100').strip()
+            
+            # Name is required
+            if not name:
+                errors.append(f"Row skipped: missing name")
+                skipped += 1
+                continue
+            
+            # Generate client_id if not provided
+            if not client_id:
+                counter = Counter.get_next_id()
+                client_id = f"C{counter:05d}"
+            
+            # Check for duplicate client_id
+            existing = DBClient.query.filter_by(client_id=client_id).first()
+            if existing:
+                errors.append(f"Skipped duplicate ID: {client_id}")
+                skipped += 1
+                continue
+            
+            # Create new client
+            try:
+                new_client = DBClient(
+                    client_id=client_id,
+                    name=name,
+                    email=email,
+                    phone=phone,
+                    household_size=int(household_size) if household_size else 1,
+                    language=language if language else 'English',
+                    points_per_visit=int(points_per_visit) if points_per_visit else 100
+                )
+                db.session.add(new_client)
+                added += 1
+            except Exception as e:
+                errors.append(f"Error with {name}: {str(e)}")
+                skipped += 1
+        
+        db.session.commit()
+        
+        message = f"Import complete: {added} clients added, {skipped} skipped."
+        if errors and len(errors) <= 5:
+            message += " " + "; ".join(errors)
+        elif errors:
+            message += f" First 5 errors: " + "; ".join(errors[:5])
+        
+        flash(message)
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error processing CSV: {str(e)}")
+    
+    return redirect('/clients/')
+
+
+@app.route('/clients/download-template')
+def download_client_template():
+    """Download CSV template for bulk client upload"""
+    if 'user_id' not in session:
+        return redirect('/')
+    
+    import io
+    import csv
+    from flask import Response
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header row
+    writer.writerow(['client_id', 'name', 'email', 'phone', 'household_size', 'language', 'points_per_visit'])
+    
+    # Example rows
+    writer.writerow(['', 'Jane Doe', 'jane@email.com', '555-123-4567', '3', 'English', '100'])
+    writer.writerow(['C99999', 'John Smith', 'john@email.com', '555-987-6543', '2', 'Spanish', '150'])
+    writer.writerow(['', 'Maria Garcia', '', '555-456-7890', '4', 'Spanish', '100'])
+    
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=client_import_template.csv'}
+    )
+
+
 @app.route('/clients/<client_id>', methods=["GET", "POST"])
 def view_client_detail(client_id):
     """View and edit client details"""
@@ -644,6 +769,34 @@ def view_client_detail(client_id):
     client_orders = [OrderProxy(o) for o in db_orders]
     
     return render_template("client_detail.html", client=client, orders=client_orders)
+
+
+@app.route('/clients/<client_id>/delete', methods=["POST"])
+def delete_client(client_id):
+    """Delete a client"""
+    if 'user_id' not in session:
+        return redirect('/')
+    
+    db_client = DBClient.query.filter_by(client_id=client_id).first()
+    
+    if not db_client:
+        flash('Client not found')
+        return redirect('/clients/')
+    
+    try:
+        # Delete associated orders first
+        DBOrder.query.filter_by(client_id=client_id).delete()
+        # Delete associated messages
+        StaffMessage.query.filter_by(client_id=client_id).delete()
+        # Delete the client
+        db.session.delete(db_client)
+        db.session.commit()
+        flash(f'Client {db_client.name} deleted successfully')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting client: {e}')
+    
+    return redirect('/clients/')
 
 
 @app.route('/orders/', methods=["GET"])

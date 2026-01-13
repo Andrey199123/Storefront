@@ -63,6 +63,30 @@
         </div>
         
         <div class="card mb-4">
+            <div class="card-header">📤 Bulk Import Clients (CSV)</div>
+            <div class="card-body">
+                <form action="/clients/bulk-upload" method="POST" enctype="multipart/form-data">
+                    <div class="row align-items-end">
+                        <div class="col-md-6">
+                            <label for="csv_file" class="col-form-label">Upload CSV File</label>
+                            <input type="file" name="csv_file" id="csv_file" class="form-control" accept=".csv" required>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-success">Import Clients</button>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/clients/download-template" class="btn btn-outline-secondary">Download Template</a>
+                        </div>
+                    </div>
+                    <small class="form-text text-muted mt-2">
+                        CSV columns (any order): client_id (optional), name (required), email, phone, household_size, language, points_per_visit. 
+                        Duplicate client IDs will be skipped.
+                    </small>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
             <div class="card-header">
                 <i class="fas fa-table mr-1"></i>
                 Clients
@@ -97,6 +121,10 @@
                                 <td>{{ client.points_per_visit }}</td>
                                 <td>
                                     <a href="/clients/{{ client.client_id }}">View/Edit</a>
+                                    |
+                                    <form action="/clients/{{ client.client_id }}/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete client {{ client.name }}? This will also delete their orders.');">
+                                        <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 0;">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                             {% endfor %}
