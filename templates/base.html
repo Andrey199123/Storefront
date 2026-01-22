@@ -11,7 +11,7 @@
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar- bg-warning">
         <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fas fa-bars"></i></button>
-        <a class="navbar-brand" href="/home">SmartChoice™ Pantry</a>
+        <a class="navbar-brand" href="/home">Poverello Ordering System</a>
         <div class="ml-auto">
             <a href="/shop" class="btn btn-sm btn-primary mr-2">Client Portal</a>
             <a href="/kiosk" class="btn btn-sm btn-info mr-2">Kiosk Mode</a>
@@ -50,6 +50,10 @@
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Inventory Report
                         </a>
+                        <a class="nav-link" href="/staff-messages/">
+                            <div class="sb-nav-link-icon"><i class="fas fa-envelope"></i></div>
+                            Client Messages
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -57,6 +61,11 @@
         <div id="layoutSidenav_content">
             {% block content %}
             {% endblock %}
+            <footer style="text-align: center; padding: 20px 0 10px 0; margin-top: 40px;">
+                <p style="font-size: 9px; color: #ccc; margin: 0;">
+                    Made by <a href="https://github.com/Andrey199123/Storefront" target="_blank" style="color: #ccc; text-decoration: none;">Andrey Vasilyev</a>
+                </p>
+            </footer>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>

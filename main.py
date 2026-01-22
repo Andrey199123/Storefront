@@ -849,6 +849,30 @@ def update_order_status(order_id):
     return jsonify({'success': False})
 
 
+@app.route('/orders/<int:order_id>/print')
+def print_order(order_id):
+    """Print order for workers"""
+    if 'user_id' not in session:
+        return redirect('/')
+    
+    db_order = DBOrder.query.filter_by(order_id=order_id).first()
+    
+    if not db_order:
+        flash('Order not found')
+        return redirect('/orders/')
+    
+    order = OrderProxy(db_order)
+    
+    # Get client info
+    db_client = DBClient.query.filter_by(client_id=order.client_id).first()
+    client = ClientProxy(db_client) if db_client else None
+    
+    # Get current time for print timestamp
+    now = datetime.now(pytz.timezone('America/New_York'))
+    
+    return render_template('print_order.html', order=order, client=client, now=now)
+
+
 @app.route('/locations/', methods=["POST", "GET"])
 def viewLocation():
     if (request.method == "POST") and ('location_name' in request.form):

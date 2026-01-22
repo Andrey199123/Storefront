@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-<title>Orders - SmartChoice</title>
+<title>Orders - Poverello</title>
 {% endblock %}
 
 {% block content %}
@@ -76,6 +76,9 @@
                                 </td>
                                 <td>
                                     <a href="/clients/{{ order.client_id }}" class="btn btn-sm btn-secondary">View Client</a>
+                                    <a href="/orders/{{ order.order_id }}/print" target="_blank" class="btn btn-sm btn-primary mt-1">
+                                        🖨️ Print
+                                    </a>
                                     {% if order.note_to_staff %}
                                     <button class="btn btn-sm btn-warning mt-1" onclick="showNote{{ order.order_id }}()" title="View Note">
                                         📝 Note
