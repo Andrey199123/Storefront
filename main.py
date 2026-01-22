@@ -124,7 +124,6 @@ def login_register():
             if user and check_password_hash(user.password, password):
                 session['user_id'] = user.username
                 session['user_role'] = user.role
-                flash('Login successful')
                 return redirect('/home')
             else:
                 flash('Invalid username/email or password')
