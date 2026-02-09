@@ -102,6 +102,10 @@ class Client(db.Model):
     visits_per_period = db.Column(db.Integer, default=1)
     allergens = db.Column(db.Text, default='[]')  # JSON array
     dietary_prefs = db.Column(db.Text, default='[]')  # JSON array
+    medical_conditions = db.Column(db.Text, default='')  # Medical nutrition needs
+    special_instructions = db.Column(db.Text, default='')  # Delivery/medical instructions
+    delivery_address = db.Column(db.Text, default='')  # Separate delivery address if different
+    delivery_notes = db.Column(db.Text, default='')  # Delivery-specific notes
     date_created = db.Column(db.String(200), default=get_eastern_time_str)
     last_visit = db.Column(db.DateTime, nullable=True)
     
@@ -176,11 +180,16 @@ class Order(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, unique=True, nullable=False)
+    invoice_number = db.Column(db.String(50), unique=True, nullable=True)  # Invoice number
     client_id = db.Column(db.String(100), db.ForeignKey('clients.client_id'), nullable=False)
     items = db.Column(db.Text, nullable=False)  # JSON array of items
     total_points = db.Column(db.Integer, nullable=False)
     fulfillment_method = db.Column(db.String(100), default='Pickup')
     satellite_location = db.Column(db.String(200), nullable=True)  # For satellite pickup
+    delivery_address = db.Column(db.Text, nullable=True)  # Home delivery address
+    delivery_status = db.Column(db.String(50), nullable=True)  # Delivery tracking status
+    delivery_driver = db.Column(db.String(200), nullable=True)  # Assigned driver
+    delivery_notes = db.Column(db.Text, nullable=True)  # Delivery instructions
     note_to_staff = db.Column(db.Text, nullable=True)  # Client notes for staff
     status = db.Column(db.String(50), default='Pending')
     pickup_time = db.Column(db.String(200), nullable=True)

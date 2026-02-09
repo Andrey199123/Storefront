@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Home Deliveries - Poverello</title>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Home Delivery Management</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/home">Dashboard</a></li>
+            <li class="breadcrumb-item active">Deliveries</li>
+        </ol>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-truck mr-1"></i>
+                Active Deliveries
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    {% if orders|length < 1 %}
+                    <h4>No active deliveries</h4>
+                    {% else %}
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Invoice #</th>
+                                <th>Client</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th>Driver</th>
+                                <th>Scheduled</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.order_id }}</td>
+                                <td>{{ order.invoice_number }}</td>
+                                <td>{{ client_lookup.get(order.client_id).name if client_lookup.get(order.client_id) else order.client_id }}</td>
+                                <td>
+                                    {{ order.delivery_address or 'No address' }}
+                                    {% if order.delivery_notes %}
+                                    <br><small class="text-muted">{{ order.delivery_notes }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <select class="form-control form-control-sm" onchange="updateDeliveryStatus({{ order.order_id }}, this.value)">
+                                        <option value="Pending" {% if order.delivery_status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="Out for Delivery" {% if order.delivery_status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
+                                        <option value="Delivered" {% if order.delivery_status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                        <option value="Failed" {% if order.delivery_status == 'Failed' %}selected{% endif %}>Failed</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" value="{{ order.delivery_driver or '' }}" 
+                                           onchange="updateDriver({{ order.order_id }}, this.value)" placeholder="Assign driver">
+                                </td>
+                                <td>{{ order.pickup_time or 'Not scheduled' }}</td>
+                                <td>
+                                    <a href="/orders/{{ order.order_id }}/invoice" target="_blank" class="btn btn-sm btn-primary">View Invoice</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function updateDeliveryStatus(orderId, newStatus) {
+        fetch('/deliveries/' + orderId + '/update-status', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: newStatus})
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Delivery status updated');
+                  if (newStatus === 'Delivered') {
+                      location.reload();
+                  }
+              }
+          });
+    }
+    
+    function updateDriver(orderId, driver) {
+        fetch('/deliveries/' + orderId + '/update-driver', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({driver: driver})
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  console.log('Driver updated');
+              }
+          });
+    }
+</script>
+{% endblock %}

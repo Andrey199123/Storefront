@@ -76,6 +76,9 @@
                                 </td>
                                 <td>
                                     <a href="/clients/{{ order.client_id }}" class="btn btn-sm btn-secondary">View Client</a>
+                                    <a href="/orders/{{ order.order_id }}/invoice" target="_blank" class="btn btn-sm btn-success mt-1">
+                                        📄 Invoice
+                                    </a>
                                     <a href="/orders/{{ order.order_id }}/print" target="_blank" class="btn btn-sm btn-primary mt-1">
                                         🖨️ Print
                                     </a>

@@ -63,6 +63,37 @@
                             <input type="number" name="points_per_visit" id="points_per_visit" class="form-control" value="{{ client.points_per_visit }}" min="1">
                         </div>
                     </div>
+                    
+                    <h5 class="mt-4 mb-3">Medical & Nutrition Information</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="medical_conditions" class="col-form-label">Medical Conditions</label>
+                            <textarea name="medical_conditions" id="medical_conditions" class="form-control" rows="3" placeholder="e.g., Diabetes, Celiac Disease, Heart Disease">{{ client.medical_conditions }}</textarea>
+                            <small class="form-text text-muted">List any medical conditions that affect dietary needs</small>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label for="special_instructions" class="col-form-label">Special Instructions</label>
+                            <textarea name="special_instructions" id="special_instructions" class="form-control" rows="3" placeholder="e.g., Low sodium diet required, No gluten products">{{ client.special_instructions }}</textarea>
+                            <small class="form-text text-muted">Any special dietary or handling instructions</small>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Delivery Information</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="delivery_address" class="col-form-label">Delivery Address</label>
+                            <textarea name="delivery_address" id="delivery_address" class="form-control" rows="2" placeholder="Full delivery address if different from main address">{{ client.delivery_address }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label for="delivery_notes" class="col-form-label">Delivery Notes</label>
+                            <textarea name="delivery_notes" id="delivery_notes" class="form-control" rows="2" placeholder="e.g., Gate code, parking instructions, best delivery time">{{ client.delivery_notes }}</textarea>
+                        </div>
+                    </div>
+                    
                     <br>
                     <button type="submit" class="btn btn-primary">Update Client</button>
                     <a href="/clients/" class="btn btn-secondary">Cancel</a>

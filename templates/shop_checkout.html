@@ -180,6 +180,14 @@
                     <div class="description">We'll deliver to your home address</div>
                 </label>
                 
+                <!-- Home Delivery Address (shown when Delivery is selected) -->
+                <div id="delivery-address-section" style="display: none; margin-top: 15px; padding: 15px; background: #f5f7ff; border-radius: 8px; border: 2px solid #667eea;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Delivery Address:</label>
+                    <textarea name="delivery_address" id="delivery_address" rows="3" placeholder="Enter delivery address (leave blank to use your registered address)" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; resize: vertical;"></textarea>
+                    <label style="display: block; margin: 10px 0 5px 0; font-weight: 600; color: #333;">Delivery Instructions:</label>
+                    <textarea name="delivery_notes" id="delivery_notes" rows="2" placeholder="Gate code, parking instructions, etc." style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; resize: vertical;"></textarea>
+                </div>
+                
                 <label class="fulfillment-option">
                     <input type="radio" name="fulfillment_method" value="Satellite">
                     <div class="title">📍 Satellite Pickup Location</div>
@@ -255,10 +263,17 @@
         document.querySelectorAll('input[name="fulfillment_method"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const satelliteLocations = document.getElementById('satellite-locations');
+                const deliverySection = document.getElementById('delivery-address-section');
+                
                 if (this.value === 'Satellite') {
                     satelliteLocations.style.display = 'block';
+                    deliverySection.style.display = 'none';
+                } else if (this.value === 'Delivery') {
+                    satelliteLocations.style.display = 'none';
+                    deliverySection.style.display = 'block';
                 } else {
                     satelliteLocations.style.display = 'none';
+                    deliverySection.style.display = 'none';
                 }
             });
         });

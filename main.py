@@ -74,6 +74,13 @@ class ClientProxy:
         self.visits_per_period = db_client.visits_per_period
         self.allergens = db_client.get_allergens()
         self.dietary_prefs = db_client.get_dietary_prefs()
+        self.medical_conditions = db_client.medical_conditions
+        self.special_instructions = db_client.special_instructions
+        self.delivery_address = db_client.delivery_address
+        self.delivery_notes = db_client.delivery_notes
+        self.date_created = db_client.date_created
+        self.last_visit = db_client.last_visit
+        self.dietary_prefs = db_client.get_dietary_prefs()
         self.date_created = db_client.date_created
         self.last_visit = db_client.last_visit
 
@@ -98,11 +105,16 @@ class MovementProxy:
 class OrderProxy:
     def __init__(self, db_order):
         self.order_id = db_order.order_id
+        self.invoice_number = db_order.invoice_number
         self.client_id = db_order.client_id
         self.items = db_order.get_items()
         self.total_points = db_order.total_points
         self.fulfillment_method = db_order.fulfillment_method
         self.satellite_location = db_order.satellite_location
+        self.delivery_address = db_order.delivery_address
+        self.delivery_status = db_order.delivery_status
+        self.delivery_driver = db_order.delivery_driver
+        self.delivery_notes = db_order.delivery_notes
         self.note_to_staff = db_order.note_to_staff
         self.status = db_order.status
         self.pickup_time = db_order.pickup_time
@@ -325,17 +337,33 @@ def shop_checkout():
         pickup_time = request.form.get('pickup_time')
         satellite_location = request.form.get('satellite_location', '')
         note_to_staff = request.form.get('note_to_staff', '')
+        delivery_address = request.form.get('delivery_address', '')
+        delivery_notes = request.form.get('delivery_notes', '')
         
         # Create order
         order_id = Counter.get_next_id()
         total_points = sum(item['points'] * item['quantity'] for item in cart)
         
+        # Generate invoice number
+        invoice_number = f"INV-{datetime.now().strftime('%Y%m%d')}-{order_id:05d}"
+        
+        # Use client's delivery address if home delivery and no custom address provided
+        if fulfillment_method == 'Delivery':
+            if not delivery_address.strip() and client.delivery_address:
+                delivery_address = client.delivery_address
+            elif not delivery_address.strip() and client.address:
+                delivery_address = client.address
+        
         order = DBOrder(
             order_id=order_id,
+            invoice_number=invoice_number,
             client_id=client_id,
             total_points=total_points,
             fulfillment_method=fulfillment_method,
             satellite_location=satellite_location if fulfillment_method == 'Satellite' else None,
+            delivery_address=delivery_address if fulfillment_method == 'Delivery' else None,
+            delivery_status='Pending' if fulfillment_method == 'Delivery' else None,
+            delivery_notes=delivery_notes if fulfillment_method == 'Delivery' and delivery_notes.strip() else None,
             note_to_staff=note_to_staff if note_to_staff.strip() else None,
             pickup_time=pickup_time
         )
@@ -572,6 +600,14 @@ def index():
                          pending_orders=pending_orders, unread_messages=unread_messages)
 
 
+@app.route('/support')
+def support():
+    """Support and contact information"""
+    if 'user_id' not in session:
+        return redirect('/')
+    return render_template('support.html')
+
+
 @app.route('/clients/', methods=["POST", "GET"])
 def view_clients():
     """View and manage clients"""
@@ -757,6 +793,14 @@ def view_client_detail(client_id):
         db_client.language = request.form.get("language", "English")
         db_client.points_per_visit = int(request.form.get("points_per_visit", 100))
         
+        # Medical & Nutrition fields
+        db_client.medical_conditions = request.form.get("medical_conditions", "")
+        db_client.special_instructions = request.form.get("special_instructions", "")
+        
+        # Delivery fields
+        db_client.delivery_address = request.form.get("delivery_address", "")
+        db_client.delivery_notes = request.form.get("delivery_notes", "")
+        
         db.session.commit()
         flash('Client updated successfully')
         return redirect('/clients/')
@@ -870,6 +914,85 @@ def print_order(order_id):
     now = datetime.now(pytz.timezone('America/New_York'))
     
     return render_template('print_order.html', order=order, client=client, now=now)
+
+
+@app.route('/orders/<int:order_id>/invoice')
+def view_invoice(order_id):
+    """View/print invoice for order"""
+    if 'user_id' not in session:
+        return redirect('/')
+    
+    db_order = DBOrder.query.filter_by(order_id=order_id).first()
+    
+    if not db_order:
+        flash('Order not found')
+        return redirect('/orders/')
+    
+    order = OrderProxy(db_order)
+    
+    # Get client info
+    db_client = DBClient.query.filter_by(client_id=order.client_id).first()
+    client = ClientProxy(db_client) if db_client else None
+    
+    # Get current time for invoice timestamp
+    now = datetime.now(pytz.timezone('America/New_York'))
+    
+    return render_template('invoice.html', order=order, client=client, now=now)
+
+
+@app.route('/deliveries/', methods=["GET"])
+def view_deliveries():
+    """View all delivery orders"""
+    if 'user_id' not in session:
+        return redirect('/')
+    
+    # Get all orders with delivery fulfillment method
+    db_orders = DBOrder.query.filter_by(fulfillment_method='Delivery').order_by(DBOrder.created_at.desc()).all()
+    orders = [OrderProxy(o) for o in db_orders]
+    
+    # Create client lookup
+    client_lookup = {}
+    for order in orders:
+        if order.client_id not in client_lookup:
+            db_client = DBClient.query.filter_by(client_id=order.client_id).first()
+            if db_client:
+                client_lookup[order.client_id] = ClientProxy(db_client)
+    
+    return render_template("deliveries.html", orders=orders, client_lookup=client_lookup)
+
+
+@app.route('/deliveries/<int:order_id>/update-status', methods=["POST"])
+def update_delivery_status(order_id):
+    """Update delivery status"""
+    if 'user_id' not in session:
+        return jsonify({'success': False})
+    
+    new_status = request.json.get('status')
+    order = DBOrder.query.filter_by(order_id=order_id).first()
+    
+    if order:
+        order.delivery_status = new_status
+        db.session.commit()
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False})
+
+
+@app.route('/deliveries/<int:order_id>/update-driver', methods=["POST"])
+def update_delivery_driver(order_id):
+    """Update delivery driver"""
+    if 'user_id' not in session:
+        return jsonify({'success': False})
+    
+    driver_name = request.json.get('driver')
+    order = DBOrder.query.filter_by(order_id=order_id).first()
+    
+    if order:
+        order.delivery_driver = driver_name
+        db.session.commit()
+        return jsonify({'success': True})
+    
+    return jsonify({'success': False})
 
 
 @app.route('/locations/', methods=["POST", "GET"])

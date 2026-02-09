@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ order.invoice_number }}</title>
+    <style>
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body {
+                margin: 0;
+                padding: 20px;
+            }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            border-bottom: 3px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .company-info h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #333;
+        }
+        
+        .company-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .invoice-details {
+            text-align: right;
+        }
+        
+        .invoice-details h2 {
+            margin: 0;
+            font-size: 32px;
+            color: #333;
+        }
+        
+        .invoice-details p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .invoice-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .parties {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .party-box {
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .party-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #667eea;
+            text-transform: uppercase;
+        }
+        
+        .party-box p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .items-table thead {
+            background: #333;
+            color: white;
+        }
+        
+        .items-table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .items-table tr:last-child td {
+            border-bottom: 2px solid #333;
+        }
+        
+        .items-table .text-right {
+            text-align: right;
+        }
+        
+        .items-table .text-center {
+            text-align: center;
+        }
+        
+        .totals {
+            margin-left: auto;
+            width: 300px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+        
+        .total-row.grand-total {
+            border-top: 2px solid #333;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            padding-top: 15px;
+            margin-top: 10px;
+        }
+        
+        .notes-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .notes-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .notes-section p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .print-button:hover {
+            background: #5568d3;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-ready { background: #d1ecf1; color: #0c5460; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">🖨️ Print Invoice</button>
+    
+    <div class="invoice-header">
+        <div class="company-info">
+            <h1>Poverello Food Pantry</h1>
+            <p>[Your Address]</p>
+            <p>[Your Phone] | [Your Email]</p>
+            <p>Tax ID: [Your Tax ID]</p>
+        </div>
+        <div class="invoice-details">
+            <h2>INVOICE</h2>
+            <p class="invoice-number">{{ order.invoice_number }}</p>
+            <p><strong>Order #:</strong> {{ order.order_id }}</p>
+            <p><strong>Date:</strong> {{ order.created_at.strftime('%B %d, %Y') }}</p>
+            <p><span class="status-badge status-{{ order.status.lower() }}">{{ order.status }}</span></p>
+        </div>
+    </div>
+    
+    <div class="parties">
+        <div class="party-box">
+            <h3>Bill To</h3>
+            <p><strong>{{ client.name }}</strong></p>
+            <p>Client ID: {{ client.client_id }}</p>
+            {% if client.email %}
+            <p>{{ client.email }}</p>
+            {% endif %}
+            {% if client.phone %}
+            <p>{{ client.phone }}</p>
+            {% endif %}
+            {% if client.address %}
+            <p>{{ client.address }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="party-box">
+            <h3>Fulfillment Details</h3>
+            <p><strong>Method:</strong> {{ order.fulfillment_method }}</p>
+            {% if order.pickup_time %}
+            <p><strong>Scheduled:</strong> {{ order.pickup_time }}</p>
+            {% endif %}
+            {% if order.satellite_location %}
+            <p><strong>Location:</strong> {{ order.satellite_location }}</p>
+            {% endif %}
+            {% if order.delivery_address %}
+            <p><strong>Delivery To:</strong><br>{{ order.delivery_address }}</p>
+            {% endif %}
+            {% if order.delivery_status %}
+            <p><strong>Delivery Status:</strong> {{ order.delivery_status }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if order.note_to_staff or order.delivery_notes %}
+    <div class="notes-section">
+        {% if order.note_to_staff %}
+        <h4>📝 Client Note:</h4>
+        <p>{{ order.note_to_staff }}</p>
+        {% endif %}
+        {% if order.delivery_notes %}
+        <h4>🚚 Delivery Instructions:</h4>
+        <p>{{ order.delivery_notes }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Item Description</th>
+                <th>Category</th>
+                <th class="text-center">Quantity</th>
+                <th class="text-right">Points Each</th>
+                <th class="text-right">Total Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.category }}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-right">{{ item.points }}</td>
+                <td class="text-right">{{ item.points * item.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="totals">
+        <div class="total-row">
+            <span>Subtotal:</span>
+            <span>{{ order.total_points }} points</span>
+        </div>
+        <div class="total-row">
+            <span>Tax:</span>
+            <span>$0.00</span>
+        </div>
+        <div class="total-row grand-total">
+            <span>TOTAL:</span>
+            <span>{{ order.total_points }} points</span>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p><strong>Thank you for using Poverello Food Pantry services</strong></p>
+        <p>This invoice is for record-keeping purposes. No payment is required.</p>
+        <p>Invoice generated on {{ now.strftime('%B %d, %Y at %I:%M %p') }}</p>
+        <p style="margin-top: 20px; font-size: 10px;">Poverello Ordering System | Made by Andrey Vasilyev</p>
+    </div>
+</body>
+</html>

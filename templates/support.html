@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Support & Contact - Poverello</title>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Support & Contact Information</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/home">Dashboard</a></li>
+            <li class="breadcrumb-item active">Support</li>
+        </ol>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-phone mr-2"></i>Technical Support
+                    </div>
+                    <div class="card-body">
+                        <h5>For System Issues & Troubleshooting</h5>
+                        <p><strong>Developer:</strong> Andrey Vasilyev</p>
+                        <p><strong>GitHub:</strong> <a href="https://github.com/Andrey199123/Storefront" target="_blank">github.com/Andrey199123/Storefront</a></p>
+                        <p><strong>Email:</strong> <a href="mailto:pl222782@ahschool.com">pl222782@ahschool.com</a></p>
+                        <p><strong>Club Supervisor:</strong> Mrs. Behar (<a href="mailto:marisa.behar@ahschool.com">marisa.behar@ahschool.com</a>)</p>
+                        <p><strong>Response Time:</strong> Within 24-48 hours</p>
+                        
+                        <hr>
+                        
+                        <h6>Common Issues:</h6>
+                        <ul>
+                            <li>Login problems - Check username/password</li>
+                            <li>Order not printing - Check browser print settings</li>
+                            <li>Client not found - Verify Client ID format (C#####)</li>
+                            <li>Inventory issues - Check product movements</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-building mr-2"></i>Poverello Food Pantry
+                    </div>
+                    <div class="card-body">
+                        <h5>Contact Information</h5>
+                        <p><strong>Phone:</strong> 954-561-3663</p>
+                        <p class="mb-3">If you need our assistance, to donate or to schedule a pickup, please call us.</p>
+                        
+                        <hr>
+                        
+                        <h6>Upcoming Events & Happenings</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><strong>Tuesday, February 10 | 12:00 pm - 2:00 pm</strong><br>
+                                Snack and Shop - Poverello Thrift Store, Wilton Manors</li>
+                            <li class="mb-2"><strong>Friday, February 13 | 10:00 am - 2:00 pm</strong><br>
+                                The Spot - Poverello Thrift Store, Wilton Manors</li>
+                            <li class="mb-2"><strong>Tuesday, February 17 | 12:00 pm - 2:00 pm</strong><br>
+                                Snack and Shop - Poverello Thrift Store, Wilton Manors</li>
+                            <li class="mb-2"><strong>Wednesday, February 18 | 2:00 pm - 4:00 pm</strong><br>
+                                CAN Community Health and Midland Men's HIV Support Groups - Poverello's Learning Kitchen, Wilton Manors</li>
+                            <li class="mb-2"><strong>Friday, February 20 | 10:00 am - 2:00 pm</strong><br>
+                                The Spot - Poverello Thrift Store, Wilton Manors</li>
+                            <li class="mb-2"><strong>Tuesday, February 24 | 12:00 pm - 2:00 pm</strong><br>
+                                Snack and Shop - Poverello Thrift Store, Wilton Manors</li>
+                        </ul>
+                        
+                        <hr>
+                        
+                        <h6>Services Available:</h6>
+                        <ul>
+                            <li>Client registration & eligibility</li>
+                            <li>Food distribution & ordering</li>
+                            <li>Volunteer opportunities</li>
+                            <li>Donations & partnerships</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-book mr-2"></i>System Information
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Version</h6>
+                        <p>Poverello Ordering System v2.0</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Last Updated</h6>
+                        <p>February 2026</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Database</h6>
+                        <p>SQLite (Local)</p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6>Feature Requests & Upgrades</h6>
+                <p>To request new features or system upgrades, please contact the developer via GitHub or email. Include detailed descriptions of the desired functionality and any specific requirements.</p>
+                
+                <h6>Reporting Bugs</h6>
+                <p>If you encounter any bugs or unexpected behavior, please report them with:</p>
+                <ul>
+                    <li>Steps to reproduce the issue</li>
+                    <li>Screenshots if applicable</li>
+                    <li>Browser and device information</li>
+                    <li>Any error messages displayed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
