@@ -161,6 +161,15 @@ def login_register():
     return render_template('login.html')
 
 
+@app.route('/logout')
+def logout():
+    """Logout staff user"""
+    session.pop('user_id', None)
+    session.pop('user_role', None)
+    flash('You have been logged out successfully')
+    return redirect('/')
+
+
 # Client Shopping Portal
 @app.route('/shop', methods=['GET'])
 def client_shop_login():
