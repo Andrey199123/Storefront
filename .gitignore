@@ -51,3 +51,4 @@ Thumbs.db
 *_backup.py
 *_old.py
 main_pkl_backup.py
+backups/
