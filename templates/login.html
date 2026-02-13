@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="icon" type="image/x-icon" href="https://www.poverello.org/wp-content/uploads/2023/03/cropped-Poverello-Logo-Icon-32x32.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.dark.min.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.dark.min.css.map')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.dark.rtl.min.css')}}">
@@ -11,6 +12,21 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.min.css.map')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap/mdb.rtl.min.css')}}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" integrity="sha512-GWzVrcGlo0TxTRvz9ttioyYJ+Wwk9Ck0G81D+eO63BaqHaJ3YZX9wuqjwgfcV/MrB2PhaVX9DkYVhbFpStnqpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        /* Force label to stay raised when input has content or is focused */
+        .form-outline input:not(:placeholder-shown) + .form-label,
+        .form-outline input:focus + .form-label {
+            transform: translateY(-1rem) translateY(-0.5rem) scale(0.8);
+            background-color: #fff;
+            padding: 0 0.25rem;
+        }
+        
+        /* Ensure input text is always visible */
+        .form-outline input {
+            color: #000 !important;
+            opacity: 1 !important;
+        }
+    </style>
 </head>
 <body>
     <form action="/" method="POST" class="col-12 col-md-6 mx-auto mt-5" id="login_form">
@@ -41,11 +57,11 @@
                 </div>
                 <p class="text-center">or:</p>
                 <div class="form-outline mb-4">
-                    <input type="text" id="username_or_email" name="username_or_email" class="form-control" />
+                    <input type="text" id="username_or_email" name="username_or_email" class="form-control" placeholder=" " />
                     <label class="form-label" for="username_or_email">Email or username</label>
                 </div>
                 <div class="form-outline mb-4">
-                    <input type="password" id="loginPassword" name="password" class="form-control" />
+                    <input type="password" id="loginPassword" name="password" class="form-control" placeholder=" " />
                     <label class="form-label" for="loginPassword">Password</label>
                 </div>
                 <input type="hidden" name="form_type" value="login">
@@ -74,19 +90,19 @@
                 </div>
                 <p class="text-center">or:</p>
                 <div class="form-outline mb-4">
-                    <input type="text" id="name" name="name" class="form-control" />
+                    <input type="text" id="name" name="name" class="form-control" placeholder=" " />
                     <label class="form-label" for="name">Name</label>
                 </div>
                 <div class="form-outline mb-4">
-                    <input type="text" id="username" name="username" class="form-control" />
+                    <input type="text" id="username" name="username" class="form-control" placeholder=" " />
                     <label class="form-label" for="username">Username</label>
                 </div>
                 <div class="form-outline mb-4">
-                    <input type="email" id="email" name="email" class="form-control" />
+                    <input type="email" id="email" name="email" class="form-control" placeholder=" " />
                     <label class="form-label" for="email">Email</label>
                 </div>
                 <div class="form-outline mb-4">
-                    <input type="password" id="password" name="password" class="form-control" />
+                    <input type="password" id="password" name="password" class="form-control" placeholder=" " />
                     <label class="form-label" for="password">Password</label>
                 </div>
                 <input type="hidden" name="form_type" value="register">
@@ -99,6 +115,12 @@
     <script src="{{ url_for('static', filename='js/mdb.umd.min.js')}}"></script>
     <script>
         $(document).ready(function() {
+            // Initialize MDB form inputs
+            const inputs = document.querySelectorAll('.form-outline input');
+            inputs.forEach((input) => {
+                new mdb.Input(input).init();
+            });
+            
             $('#registerSubmit').click(function(e) {
                 e.preventDefault();
                 $('#register_form').submit();
@@ -107,8 +129,8 @@
             $('#loginSubmit').click(function(e) {
                 e.preventDefault();
                 $('#login_form').submit();
-                });
             });
-        </script>
+        });
+    </script>
     </body>
 </html>

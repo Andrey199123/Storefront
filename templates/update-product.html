@@ -93,12 +93,12 @@
                         <div class="col-md-6">
                             <label class="col-form-label">Dietary Indicators</label>
                             <div>
-                                <label><input type="checkbox" name="vegan" {% if 'vegan' in product.dietary_indicators %}checked{% endif %}> Vegan</label>
-                                <label><input type="checkbox" name="vegetarian" {% if 'vegetarian' in product.dietary_indicators %}checked{% endif %}> Vegetarian</label>
-                                <label><input type="checkbox" name="gluten_free" {% if 'gluten-free' in product.dietary_indicators %}checked{% endif %}> Gluten-Free</label>
-                                <label><input type="checkbox" name="low_sodium" {% if 'low-sodium' in product.dietary_indicators %}checked{% endif %}> Low Sodium</label>
-                                <label><input type="checkbox" name="sugar_free" {% if 'sugar-free' in product.dietary_indicators %}checked{% endif %}> Sugar-Free</label>
-                                <label><input type="checkbox" name="dairy_free" {% if 'dairy-free' in product.dietary_indicators %}checked{% endif %}> Dairy-Free</label>
+                                <label><input type="checkbox" name="vegan" {% if 'Vegan' in product.dietary_indicators or 'vegan' in product.dietary_indicators %}checked{% endif %}> Vegan</label>
+                                <label><input type="checkbox" name="vegetarian" {% if 'Vegetarian' in product.dietary_indicators or 'vegetarian' in product.dietary_indicators %}checked{% endif %}> Vegetarian</label>
+                                <label><input type="checkbox" name="gluten_free" {% if 'Gluten-Free' in product.dietary_indicators or 'gluten-free' in product.dietary_indicators %}checked{% endif %}> Gluten-Free</label>
+                                <label><input type="checkbox" name="low_sodium" {% if 'Low Sodium' in product.dietary_indicators or 'low-sodium' in product.dietary_indicators %}checked{% endif %}> Low Sodium</label>
+                                <label><input type="checkbox" name="sugar_free" {% if 'Sugar-Free' in product.dietary_indicators or 'sugar-free' in product.dietary_indicators %}checked{% endif %}> Sugar-Free</label>
+                                <label><input type="checkbox" name="dairy_free" {% if 'Dairy-Free' in product.dietary_indicators or 'dairy-free' in product.dietary_indicators %}checked{% endif %}> Dairy-Free</label>
                             </div>
                         </div>
                         <div class="col-md-6">

@@ -264,6 +264,7 @@
         <div class="cart-panel">
             <div class="header">
                 <h2>Your Cart</h2>
+                <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0;">.</p>
             </div>
             
             <div class="points-display">
@@ -338,8 +339,11 @@
             </div>
             <div style="padding: 20px;">
                 <p style="color: #666; margin-bottom: 15px;">Have a question or need assistance? Send us a message and we'll get back to you.</p>
-                <textarea id="staff-message" rows="4" placeholder="Type your message here..." 
+                <textarea id="staff-message" rows="4" placeholder="Type your message here..." maxlength="2000" oninput="updateCharCount()"
                     style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; resize: vertical; box-sizing: border-box;"></textarea>
+                <div style="text-align: right; color: #999; font-size: 12px; margin-top: 5px;">
+                    <span id="char-count">0</span> / 2000 characters
+                </div>
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
                     <button onclick="closeStaffModal()" style="flex: 1; padding: 12px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">
                         Cancel
@@ -361,13 +365,20 @@
             }).then(() => location.reload());
         }
         
+        function updateCharCount() {
+            const message = document.getElementById('staff-message').value;
+            document.getElementById('char-count').textContent = message.length;
+        }
+        
         function openStaffModal() {
             document.getElementById('staff-modal').style.display = 'flex';
+            updateCharCount();
         }
         
         function closeStaffModal() {
             document.getElementById('staff-modal').style.display = 'none';
             document.getElementById('staff-message').value = '';
+            document.getElementById('char-count').textContent = '0';
         }
         
         function sendStaffMessage() {
@@ -377,19 +388,27 @@
                 return;
             }
             
+            if (message.length > 2000) {
+                showCustomAlert('Message Too Long', 'Message is too long. Maximum 2000 characters allowed.');
+                return;
+            }
+            
             fetch('/shop/message-staff', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({message: message})
             })
             .then(response => response.json())
-            .then(data => {
+            .then(async data => {
                 if (data.success) {
-                    alert('Message sent! Staff will review it shortly.');
+                    await showCustomAlert('Message Sent', 'Message sent! Staff will review it shortly.');
                     closeStaffModal();
                 } else {
-                    alert('Error: ' + data.error);
+                    await showCustomAlert('Error', data.error || 'Failed to send message');
                 }
+            })
+            .catch(async error => {
+                await showCustomAlert('Error', 'Failed to send message. Please try again.');
             });
         }
         
@@ -397,6 +416,41 @@
         document.getElementById('staff-modal').onclick = function(e) {
             if (e.target === this) closeStaffModal();
         };
+        
+        // Custom Alert Modal Functions
+        let alertCallback = null;
+        
+        function showCustomAlert(title, message) {
+            return new Promise((resolve) => {
+                document.getElementById('alertTitle').textContent = title;
+                document.getElementById('alertMessage').textContent = message;
+                document.getElementById('customAlertModal').style.display = 'flex';
+                alertCallback = resolve;
+            });
+        }
+        
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').style.display = 'none';
+            if (alertCallback) {
+                alertCallback(true);
+                alertCallback = null;
+            }
+        }
     </script>
+    
+    <!-- Custom Alert Modal -->
+    <div id="customAlertModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden;">
+            <div style="background: #667eea; color: white; padding: 20px;">
+                <h2 id="alertTitle" style="margin: 0; font-size: 20px; font-weight: 600;"></h2>
+            </div>
+            <div style="padding: 25px;">
+                <p id="alertMessage" style="font-size: 15px; color: #555; line-height: 1.6; margin: 0 0 20px 0;"></p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button onclick="closeCustomAlert()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

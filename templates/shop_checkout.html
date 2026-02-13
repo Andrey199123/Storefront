@@ -182,10 +182,52 @@
                 
                 <!-- Home Delivery Address (shown when Delivery is selected) -->
                 <div id="delivery-address-section" style="display: none; margin-top: 15px; padding: 15px; background: #f5f7ff; border-radius: 8px; border: 2px solid #667eea;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Delivery Address:</label>
-                    <textarea name="delivery_address" id="delivery_address" rows="3" placeholder="Enter delivery address (leave blank to use your registered address)" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; resize: vertical;"></textarea>
-                    <label style="display: block; margin: 10px 0 5px 0; font-weight: 600; color: #333;">Delivery Instructions:</label>
-                    <textarea name="delivery_notes" id="delivery_notes" rows="2" placeholder="Gate code, parking instructions, etc." style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; resize: vertical;"></textarea>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
+                        <strong>Note:</strong> Leave blank to use your registered address. Or enter a complete delivery address below.
+                    </p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Street Address *</label>
+                            <input type="text" id="street_address" placeholder="123 Main Street" 
+                                style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; box-sizing: border-box;">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Apartment/Unit (Optional)</label>
+                            <input type="text" id="apt_unit" placeholder="Apt 4B" 
+                                style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; box-sizing: border-box;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">City *</label>
+                                <input type="text" id="city" placeholder="Fort Lauderdale" 
+                                    style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">State *</label>
+                                <select id="state" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; box-sizing: border-box;">
+                                    <option value="">Select</option>
+                                    <option value="FL" selected>FL</option>
+                                    <option value="AL">AL</option>
+                                    <option value="GA">GA</option>
+                                    <option value="SC">SC</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">ZIP Code *</label>
+                            <input type="text" id="zip_code" placeholder="33301" pattern="[0-9]{5}" maxlength="5"
+                                style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; box-sizing: border-box;">
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="delivery_address" id="delivery_address">
+                    
+                    <label style="display: block; margin: 15px 0 5px 0; font-weight: 600; color: #333;">Delivery Instructions (Optional):</label>
+                    <textarea name="delivery_notes" id="delivery_notes" rows="2" placeholder="Gate code, parking instructions, best time to deliver, etc." style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; resize: vertical; box-sizing: border-box;"></textarea>
                 </div>
                 
                 <label class="fulfillment-option">
@@ -278,24 +320,120 @@
             });
         });
         
-        // Combine date and time into hidden field before form submission
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('pickup_date').setAttribute('min', today);
+        
+        // Filter time slots based on minimum 3-hour delay
+        function updateAvailableTimeSlots() {
+            const dateInput = document.getElementById('pickup_date');
+            const timeSelect = document.getElementById('pickup_time_only');
+            const selectedDate = dateInput.value;
+            
+            if (!selectedDate) return;
+            
+            const now = new Date();
+            const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+            const isToday = selectedDateObj.toDateString() === now.toDateString();
+            
+            // Get minimum allowed time (3 hours from now)
+            const minTime = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+            const minHour = minTime.getHours();
+            const minMinute = minTime.getMinutes();
+            
+            // Enable/disable time options based on availability
+            Array.from(timeSelect.options).forEach(option => {
+                if (option.value === '') return; // Skip placeholder
+                
+                if (isToday) {
+                    const [hour, minute] = option.value.split(':').map(Number);
+                    const optionTime = hour * 60 + minute;
+                    const minTimeInMinutes = minHour * 60 + minMinute;
+                    
+                    if (optionTime < minTimeInMinutes) {
+                        option.disabled = true;
+                        option.style.color = '#ccc';
+                    } else {
+                        option.disabled = false;
+                        option.style.color = '';
+                    }
+                } else {
+                    // Future dates - all times available
+                    option.disabled = false;
+                    option.style.color = '';
+                }
+            });
+            
+            // If currently selected time is now disabled, clear selection
+            if (timeSelect.value && timeSelect.options[timeSelect.selectedIndex].disabled) {
+                timeSelect.value = '';
+            }
+        }
+        
+        // Update time slots when date changes
+        document.getElementById('pickup_date').addEventListener('change', updateAvailableTimeSlots);
+        
+        // Initial update on page load
+        updateAvailableTimeSlots();
+        
+        // Combine address fields and validate before form submission
         document.querySelector('form').addEventListener('submit', function(e) {
+            const fulfillmentMethod = document.querySelector('input[name="fulfillment_method"]:checked');
+            
+            // If delivery is selected, validate and combine address fields
+            if (fulfillmentMethod && fulfillmentMethod.value === 'Delivery') {
+                const street = document.getElementById('street_address').value.trim();
+                const apt = document.getElementById('apt_unit').value.trim();
+                const city = document.getElementById('city').value.trim();
+                const state = document.getElementById('state').value;
+                const zip = document.getElementById('zip_code').value.trim();
+                
+                // If any field is filled, all required fields must be filled
+                if (street || city || state || zip) {
+                    if (!street || !city || !state || !zip) {
+                        e.preventDefault();
+                        alert('Please complete all required address fields (Street, City, State, ZIP) or leave all blank to use your registered address.');
+                        return false;
+                    }
+                    
+                    // Validate ZIP code format
+                    if (!/^\d{5}$/.test(zip)) {
+                        e.preventDefault();
+                        alert('Please enter a valid 5-digit ZIP code.');
+                        return false;
+                    }
+                    
+                    // Combine address into single field
+                    let fullAddress = street;
+                    if (apt) fullAddress += ', ' + apt;
+                    fullAddress += '\n' + city + ', ' + state + ' ' + zip;
+                    
+                    document.getElementById('delivery_address').value = fullAddress;
+                }
+            }
+            
+            // Validate pickup time is at least 3 hours from now
             const date = document.getElementById('pickup_date').value;
             const time = document.getElementById('pickup_time_only').value;
             
             if (date && time) {
+                const selectedDateTime = new Date(date + 'T' + time);
+                const now = new Date();
+                const minDateTime = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+                
+                if (selectedDateTime < minDateTime) {
+                    e.preventDefault();
+                    alert('Please select a pickup time at least 3 hours from now. This allows us time to prepare your order.');
+                    return false;
+                }
+                
                 // Format as readable string
-                const dateObj = new Date(date + 'T' + time);
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };
-                document.getElementById('pickup_time').value = dateObj.toLocaleDateString('en-US', options);
+                document.getElementById('pickup_time').value = selectedDateTime.toLocaleDateString('en-US', options);
             } else if (date) {
                 document.getElementById('pickup_time').value = date;
             }
         });
-        
-        // Set minimum date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('pickup_date').setAttribute('min', today);
     </script>
 </body>
 </html>

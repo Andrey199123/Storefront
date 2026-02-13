@@ -104,6 +104,7 @@
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
             padding-bottom: 20px;
+            isolation: isolate;
         }
         .item-card {
             background: white;
@@ -112,11 +113,16 @@
             padding: 0;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            overflow: hidden;
+            overflow: visible;
+            position: relative;
         }
         .item-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .item-card:has(.score-info-icon:hover) {
+            z-index: 10001;
         }
         .item-image {
             width: 100%;
@@ -124,9 +130,11 @@
             object-fit: cover;
             background: #f0f0f0;
             display: block;
+            border-radius: 5px 5px 0 0;
         }
         .item-content {
             padding: 15px;
+            position: relative;
         }
         .item-name {
             font-size: 18px;
@@ -159,6 +167,71 @@
         .score-high { background: #2E7D32; }
         .score-medium { background: #F9A825; }
         .score-low { background: #D32F2F; }
+        .score-info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #bbb;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: help;
+            margin-left: 3px;
+            position: relative;
+            vertical-align: middle;
+        }
+        .score-info-icon:hover {
+            background: #888;
+        }
+        .score-tooltip {
+            visibility: hidden;
+            width: 250px;
+            background-color: #ffffff;
+            color: #333;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10002;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            font-weight: normal;
+            line-height: 1.4;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 3px solid #999;
+            background-clip: padding-box;
+        }
+        .score-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #ffffff transparent transparent transparent;
+            z-index: 10003;
+        }
+        .score-info-icon:hover .score-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Hide default number input arrows */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
         .dietary-indicators {
             display: flex;
             gap: 5px;
@@ -207,6 +280,18 @@
         .cart-item-details {
             font-size: 12px;
             color: #666;
+        }
+        .cart-item-remove {
+            background: #ef5350;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .cart-item-remove:hover {
+            background: #e53935;
         }
         .points-display {
             background: white;
@@ -291,9 +376,17 @@
                                 </div>
                                 <div class="item-details">
                                     <span>Available: {{ product.available_qty }}</span>
-                                    <span class="nutrition-score {% if product.nutrition_score >= 70 %}score-high{% elif product.nutrition_score >= 40 %}score-medium{% else %}score-low{% endif %}">
-                                        Score: {{ product.nutrition_score }}
-                                    </span>
+                                    <span>
+                                        <span class="nutrition-score {% if product.nutrition_score >= 70 %}score-high{% elif product.nutrition_score >= 40 %}score-medium{% else %}score-low{% endif %}">
+                                            Score: {{ product.nutrition_score }}
+                                        </span><span class="score-info-icon">i<span class="score-tooltip">
+                                            <strong>Nutrition Score (0-100)</strong><br>
+                                            🟢 70-100: Excellent nutritional value<br>
+                                            🟡 40-69: Good nutritional value<br>
+                                            🔴 0-39: Lower nutritional value<br><br>
+                                            Higher scores indicate healthier options with better nutrients.
+                                        </span>
+                                    </span></span>
                                 </div>
                                 {% if product.dietary_indicators|length > 0 %}
                                     <div class="dietary-indicators">
@@ -302,13 +395,18 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <div style="display: flex; gap: 8px; margin-top: 10px;">
-                                    <button class="add-btn" style="flex: 1;" onclick="addToCart('{{ product.product_id }}')">Add to Cart</button>
-                                    {% if product.nutrition_score < 70 %}
-                                    <button class="add-btn" style="width: 40px; flex: none; background: #FF9800; padding: 10px;" onclick="showHealthierSwap('{{ product.product_id }}')" title="Find healthier options">
-                                        🔄
-                                    </button>
-                                    {% endif %}
+                                {% if product.nutrition_score < 70 %}
+                                <button class="add-btn" style="width: 100%; background: #2E7D32; padding: 8px; font-size: 12px; margin-top: 8px;" onclick="showHealthierSwap('{{ product.product_id }}')" title="Find healthier alternatives">
+                                    Find Healthier
+                                </button>
+                                {% endif %}
+                                <div style="display: flex; gap: 8px; margin-top: 10px; align-items: stretch;">
+                                    <div style="display: flex; align-items: center; gap: 5px; border: 1px solid #ddd; border-radius: 4px; padding: 2px; height: 36px;">
+                                        <button onclick="decrementQty('{{ product.product_id }}')" style="background: #f5f5f5; border: none; padding: 4px 8px; cursor: pointer; font-size: 14px; border-radius: 3px; height: 100%;">−</button>
+                                        <input type="number" id="qty-{{ product.product_id }}" value="1" min="1" max="{{ product.available_qty }}" style="width: 40px; border: none; text-align: center; font-size: 14px; padding: 2px; height: 100%;" />
+                                        <button onclick="incrementQty('{{ product.product_id }}', {{ product.available_qty }})" style="background: #f5f5f5; border: none; padding: 4px 8px; cursor: pointer; font-size: 14px; border-radius: 3px; height: 100%;">+</button>
+                                    </div>
+                                    <button class="add-btn" style="flex: 1; height: 36px; padding: 0 10px; margin: 0;" onclick="addToCartWithQty('{{ product.product_id }}')">Add to Cart</button>
                                 </div>
                             </div>
                         </div>
@@ -318,8 +416,9 @@
         </div>
         
         <div class="cart-panel">
-            <div class="header" style="background: #667eea;">
+            <div class="header">
                 <h2>Your Cart</h2>
+                <span style="padding: 8px 16px; visibility: hidden;">.</span>
             </div>
             
             <div class="points-display">
@@ -339,6 +438,7 @@
                                 <div class="cart-item-name">{{ item.name }}</div>
                                 <div class="cart-item-details">Qty: {{ item.quantity }} | Points: {{ item.points * item.quantity }}</div>
                             </div>
+                            <button class="cart-item-remove" onclick="removeItem('{{ item.product_id }}')">Remove</button>
                         </div>
                     {% endfor %}
                 {% endif %}
@@ -350,8 +450,121 @@
         </div>
     </div>
     
+    <!-- Custom Alert Modal -->
+    <div id="customAlertModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden;">
+            <div id="alertHeader" style="background: {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %}; color: white; padding: 20px;">
+                <h2 id="alertTitle" style="margin: 0; font-size: 20px; font-weight: 600;"></h2>
+            </div>
+            <div style="padding: 25px;">
+                <p id="alertMessage" style="font-size: 15px; color: #555; line-height: 1.6; margin: 0 0 20px 0;"></p>
+                <div id="alertButtons" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button onclick="closeCustomAlert(false)" style="padding: 10px 20px; background: #e0e0e0; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555;">Cancel</button>
+                    <button onclick="closeCustomAlert(true)" style="padding: 10px 20px; background: {% if category == 'Fruits' %}#C62828{% elif category == 'Vegetables' %}#2E7D32{% elif category == 'Dairy' %}#1976D2{% elif category == 'Proteins' %}#7B1FA2{% elif category == 'Grains' %}#F9A825{% else %}#616161{% endif %}; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script>
         let activeFilters = [];
+        let alertCallback = null;
+        let pendingProductId = null;
+        
+        function showCustomAlert(title, message, icon, showButtons = true) {
+            return new Promise((resolve) => {
+                document.getElementById('alertTitle').textContent = title;
+                document.getElementById('alertMessage').textContent = message;
+                
+                const buttonsDiv = document.getElementById('alertButtons');
+                const categoryColor = '{% if category == "Fruits" %}#C62828{% elif category == "Vegetables" %}#2E7D32{% elif category == "Dairy" %}#1976D2{% elif category == "Proteins" %}#7B1FA2{% elif category == "Grains" %}#F9A825{% else %}#616161{% endif %}';
+                
+                if (showButtons) {
+                    buttonsDiv.innerHTML = `
+                        <button onclick="closeCustomAlert(false)" style="padding: 10px 20px; background: #e0e0e0; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555;">Cancel</button>
+                        <button onclick="closeCustomAlert(true)" style="padding: 10px 20px; background: ${categoryColor}; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">Continue</button>
+                    `;
+                } else {
+                    buttonsDiv.innerHTML = `
+                        <button onclick="closeCustomAlert(true)" style="padding: 10px 20px; background: ${categoryColor}; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">OK</button>
+                    `;
+                }
+                
+                document.getElementById('customAlertModal').style.display = 'flex';
+                alertCallback = resolve;
+            });
+        }
+        
+        function closeCustomAlert(result) {
+            document.getElementById('customAlertModal').style.display = 'none';
+            if (alertCallback) {
+                alertCallback(result);
+                alertCallback = null;
+            }
+        }
+        
+        function incrementQty(productId, maxQty) {
+            const input = document.getElementById('qty-' + productId);
+            const currentVal = parseInt(input.value) || 1;
+            if (currentVal < maxQty) {
+                input.value = currentVal + 1;
+            }
+        }
+        
+        function decrementQty(productId) {
+            const input = document.getElementById('qty-' + productId);
+            const currentVal = parseInt(input.value) || 1;
+            if (currentVal > 1) {
+                input.value = currentVal - 1;
+            }
+        }
+        
+        async function addToCartWithQty(productId) {
+            const input = document.getElementById('qty-' + productId);
+            const quantity = parseInt(input.value) || 1;
+            
+            fetch('/shop/add-to-cart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({product_id: productId, quantity: quantity})
+            }).then(response => response.json())
+              .then(async data => {
+                  if (data.success) {
+                      if (data.warning && data.allergens) {
+                          // Show allergen warning
+                          const proceed = await showCustomAlert(
+                              'Allergen Warning',
+                              data.message + '\n\nAre you sure you want to add this item to your cart?',
+                              '',
+                              true
+                          );
+                          
+                          if (proceed) {
+                              location.reload();
+                          } else {
+                              // Remove the item from cart if they cancel
+                              fetch('/shop/remove-from-cart', {
+                                  method: 'POST',
+                                  headers: {'Content-Type': 'application/json'},
+                                  body: JSON.stringify({product_id: productId})
+                              }).then(() => location.reload());
+                          }
+                      } else {
+                          location.reload();
+                      }
+                  } else {
+                      await showCustomAlert('Error', data.error || 'Error adding item to cart', '', false);
+                  }
+              });
+        }
+        
+        function removeItem(productId) {
+            fetch('/shop/remove-from-cart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({product_id: productId})
+            }).then(() => location.reload());
+        }
         
         function toggleFilter(button) {
             const filter = button.getAttribute('data-filter');
@@ -390,29 +603,15 @@
             });
         }
         
-        function addToCart(productId) {
-            fetch('/shop/add-to-cart', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({product_id: productId, quantity: 1})
-            }).then(response => response.json())
-              .then(data => {
-                  if (data.success) {
-                      location.reload();
-                  } else {
-                      alert('Error adding item to cart');
-                  }
-              });
-        }
         
-        function showHealthierSwap(productId) {
+        async function showHealthierSwap(productId) {
             fetch('/shop/healthier-swap/' + productId)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.alternatives.length > 0) {
                         showSwapModal(productId, data.current_score, data.alternatives);
                     } else {
-                        alert('No healthier alternatives available in this category.');
+                        showCustomAlert('No Alternatives', 'No healthier alternatives available in this category.', 'ℹ️', false);
                     }
                 });
         }
@@ -421,22 +620,22 @@
             // Create modal
             const modal = document.createElement('div');
             modal.id = 'swap-modal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 10000;';
             
             let alternativesHtml = alternatives.map(alt => `
-                <div style="background: white; border: 2px solid #4CAF50; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                <div style="background: white; border: 2px solid #2E7D32; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
                     <div style="display: flex; gap: 15px; align-items: center;">
                         <img src="${alt.image_url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px;">
                         <div style="flex: 1;">
                             <div style="font-weight: bold; font-size: 16px; color: #333;">${alt.product_id}</div>
                             <div style="font-size: 13px; color: #666; margin: 5px 0;">${alt.description}</div>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <span style="background: #4CAF50; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Score: ${alt.nutrition_score}</span>
+                                <span style="background: #2E7D32; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Score: ${alt.nutrition_score}</span>
                                 <span style="color: #666; font-size: 12px;">Points: ${alt.points}</span>
                                 <span style="color: #666; font-size: 12px;">Available: ${alt.available_qty}</span>
                             </div>
                         </div>
-                        <button onclick="addToCart('${alt.product_id}'); closeSwapModal();" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                        <button onclick="addAlternativeToCart('${alt.product_id}');" style="background: #2E7D32; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">
                             Add
                         </button>
                     </div>
@@ -465,6 +664,10 @@
             };
         }
         
+        async function addAlternativeToCart(productId) {
+            await addToCartWithQty(productId);
+            closeSwapModal();
+        }
         function closeSwapModal() {
             const modal = document.getElementById('swap-modal');
             if (modal) modal.remove();

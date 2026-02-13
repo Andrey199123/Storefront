@@ -65,7 +65,66 @@
                     </div>
                     
                     <h5 class="mt-4 mb-3">Medical & Nutrition Information</h5>
+                    
                     <div class="row">
+                        <div class="col-md-6">
+                            <label class="col-form-label">Allergens</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="allergens" value="Gluten" id="allergen_gluten" {% if 'Gluten' in client.allergens %}checked{% endif %}>
+                                <label class="form-check-label" for="allergen_gluten">Gluten</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="allergens" value="Dairy" id="allergen_dairy" {% if 'Dairy' in client.allergens %}checked{% endif %}>
+                                <label class="form-check-label" for="allergen_dairy">Dairy</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="allergens" value="Nuts" id="allergen_nuts" {% if 'Nuts' in client.allergens %}checked{% endif %}>
+                                <label class="form-check-label" for="allergen_nuts">Nuts</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="allergens" value="Soy" id="allergen_soy" {% if 'Soy' in client.allergens %}checked{% endif %}>
+                                <label class="form-check-label" for="allergen_soy">Soy</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="allergens" value="Eggs" id="allergen_eggs" {% if 'Eggs' in client.allergens %}checked{% endif %}>
+                                <label class="form-check-label" for="allergen_eggs">Eggs</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="allergens" value="Shellfish" id="allergen_shellfish" {% if 'Shellfish' in client.allergens %}checked{% endif %}>
+                                <label class="form-check-label" for="allergen_shellfish">Shellfish</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="col-form-label">Dietary Preferences</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="dietary_prefs" value="Vegetarian" id="diet_vegetarian" {% if 'Vegetarian' in client.dietary_prefs %}checked{% endif %}>
+                                <label class="form-check-label" for="diet_vegetarian">Vegetarian</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="dietary_prefs" value="Vegan" id="diet_vegan" {% if 'Vegan' in client.dietary_prefs %}checked{% endif %}>
+                                <label class="form-check-label" for="diet_vegan">Vegan</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="dietary_prefs" value="Halal" id="diet_halal" {% if 'Halal' in client.dietary_prefs %}checked{% endif %}>
+                                <label class="form-check-label" for="diet_halal">Halal</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="dietary_prefs" value="Kosher" id="diet_kosher" {% if 'Kosher' in client.dietary_prefs %}checked{% endif %}>
+                                <label class="form-check-label" for="diet_kosher">Kosher</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="dietary_prefs" value="Low Sodium" id="diet_low_sodium" {% if 'Low Sodium' in client.dietary_prefs %}checked{% endif %}>
+                                <label class="form-check-label" for="diet_low_sodium">Low Sodium</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="dietary_prefs" value="Diabetic Friendly" id="diet_diabetic" {% if 'Diabetic Friendly' in client.dietary_prefs %}checked{% endif %}>
+                                <label class="form-check-label" for="diet_diabetic">Diabetic Friendly</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
                         <div class="col-md-12">
                             <label for="medical_conditions" class="col-form-label">Medical Conditions</label>
                             <textarea name="medical_conditions" id="medical_conditions" class="form-control" rows="3" placeholder="e.g., Diabetes, Celiac Disease, Heart Disease">{{ client.medical_conditions }}</textarea>

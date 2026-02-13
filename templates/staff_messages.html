@@ -27,21 +27,48 @@
                 {% else %}
                 <div class="list-group">
                     {% for msg in messages %}
+                    {% set client = clients.get(msg.client_id) %}
                     <div class="list-group-item {% if not msg.is_read %}list-group-item-warning{% endif %}" id="msg-{{ msg.message_id }}">
                         <div class="d-flex w-100 justify-content-between align-items-start">
                             <div style="flex: 1;">
                                 <div class="d-flex align-items-center mb-2">
                                     <h5 class="mb-0 mr-3">
-                                        {{ client_lookup.get(msg.client_id, msg.client_id) }}
+                                        {% if client %}
+                                            {{ client.name }}
+                                        {% else %}
+                                            {{ msg.client_id }}
+                                        {% endif %}
                                     </h5>
                                     {% if not msg.is_read %}
                                     <span class="badge badge-warning">New</span>
                                     {% endif %}
                                 </div>
-                                <p class="mb-2" style="white-space: pre-wrap;">{{ msg.message }}</p>
+                                
+                                {% if client %}
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-id-card"></i> {{ msg.client_id }}
+                                        {% if client.email %}
+                                        | <i class="fas fa-envelope"></i> {{ client.email }}
+                                        {% endif %}
+                                        {% if client.phone %}
+                                        | <i class="fas fa-phone"></i> {{ client.phone }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="message-content">
+                                    {% if msg.message|length > 150 %}
+                                    <p class="mb-2 message-preview" id="preview-{{ msg.message_id }}" style="white-space: pre-wrap;">{{ msg.message[:150] }}... <a href="javascript:void(0)" onclick="expandMessage({{ msg.message_id }})" class="text-primary">Read more</a></p>
+                                    <p class="mb-2 message-full" id="full-{{ msg.message_id }}" style="white-space: pre-wrap; display: none;">{{ msg.message }} <a href="javascript:void(0)" onclick="collapseMessage({{ msg.message_id }})" class="text-primary">Show less</a></p>
+                                    {% else %}
+                                    <p class="mb-2" style="white-space: pre-wrap;">{{ msg.message }}</p>
+                                    {% endif %}
+                                </div>
+                                
                                 <small class="text-muted">
-                                    {{ msg.created_at.strftime('%B %d, %Y at %I:%M %p') }}
-                                    | Client ID: {{ msg.client_id }}
+                                    <i class="fas fa-clock"></i> {{ msg.created_at.strftime('%B %d, %Y at %I:%M %p') }}
                                 </small>
                             </div>
                             <div>
@@ -78,6 +105,16 @@
                 location.reload();
             }
         });
+    }
+    
+    function expandMessage(messageId) {
+        document.getElementById('preview-' + messageId).style.display = 'none';
+        document.getElementById('full-' + messageId).style.display = 'block';
+    }
+    
+    function collapseMessage(messageId) {
+        document.getElementById('preview-' + messageId).style.display = 'block';
+        document.getElementById('full-' + messageId).style.display = 'none';
     }
 </script>
 {% endblock %}

@@ -293,10 +293,50 @@ def add_to_cart():
     if not product:
         return jsonify({'success': False, 'error': 'Product not found'})
     
+    # Calculate available quantity from inventory
+    pantry_location = DBLocation.query.filter_by(location_id='Pantry').first()
+    inventory = 0
+    if pantry_location:
+        movements_in = db.session.query(db.func.sum(DBMovement.qty)).filter_by(
+            product_id=product_id, to_location='Pantry'
+        ).scalar() or 0
+        movements_out = db.session.query(db.func.sum(DBMovement.qty)).filter_by(
+            product_id=product_id, from_location='Pantry'
+        ).scalar() or 0
+        inventory = movements_in - movements_out
+    
+    available_qty = inventory
+    
+    # Get client allergens
+    client = DBClient.query.filter_by(client_id=session['client_id']).first()
+    client_allergens = [a.lower() for a in client.get_allergens()] if client else []
+    product_allergens = [a.lower() for a in product.get_allergens()]
+    
+    # Check for allergen conflicts
+    conflicting_allergens = [a for a in product_allergens if a in client_allergens]
+    
     cart = session.get('cart', [])
     
-    # Check if item already in cart
+    # Check if item already in cart and calculate total quantity
     existing_item = next((item for item in cart if item['product_id'] == product_id), None)
+    total_quantity = quantity
+    if existing_item:
+        total_quantity += existing_item['quantity']
+    
+    # Validate total quantity doesn't exceed available stock
+    if total_quantity > available_qty:
+        if existing_item:
+            return jsonify({
+                'success': False,
+                'error': f'Cannot add {quantity} more. Only {available_qty} units available total, and you already have {existing_item["quantity"]} in your cart.'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Cannot add {quantity} units. Only {available_qty} units available.'
+            })
+    
+    # Add to cart
     if existing_item:
         existing_item['quantity'] += quantity
     else:
@@ -309,6 +349,16 @@ def add_to_cart():
         })
     
     session['cart'] = cart
+    
+    # Return warning if allergens conflict
+    if conflicting_allergens:
+        return jsonify({
+            'success': True,
+            'warning': True,
+            'allergens': conflicting_allergens,
+            'message': f"Warning: This product contains {', '.join(conflicting_allergens)} which you marked as an allergen."
+        })
+    
     return jsonify({'success': True})
 
 
@@ -344,61 +394,83 @@ def shop_checkout():
     if request.method == 'POST':
         fulfillment_method = request.form.get('fulfillment_method')
         pickup_time = request.form.get('pickup_time')
+        pickup_date = request.form.get('pickup_date')
+        pickup_time_only = request.form.get('pickup_time_only')
         satellite_location = request.form.get('satellite_location', '')
         note_to_staff = request.form.get('note_to_staff', '')
         delivery_address = request.form.get('delivery_address', '')
         delivery_notes = request.form.get('delivery_notes', '')
         
-        # Create order
-        order_id = Counter.get_next_id()
-        total_points = sum(item['points'] * item['quantity'] for item in cart)
+        # Validate pickup time is at least 3 hours from now
+        if pickup_date and pickup_time_only:
+            try:
+                from datetime import datetime, timedelta
+                selected_datetime = datetime.strptime(f"{pickup_date} {pickup_time_only}", "%Y-%m-%d %H:%M")
+                min_datetime = datetime.now() + timedelta(hours=3)
+                
+                if selected_datetime < min_datetime:
+                    flash('Please select a pickup time at least 3 hours from now to allow us time to prepare your order.')
+                    return redirect('/shop/checkout')
+            except ValueError:
+                pass  # If parsing fails, continue without validation
         
-        # Generate invoice number
-        invoice_number = f"INV-{datetime.now().strftime('%Y%m%d')}-{order_id:05d}"
-        
-        # Use client's delivery address if home delivery and no custom address provided
-        if fulfillment_method == 'Delivery':
-            if not delivery_address.strip() and client.delivery_address:
-                delivery_address = client.delivery_address
-            elif not delivery_address.strip() and client.address:
-                delivery_address = client.address
-        
-        order = DBOrder(
-            order_id=order_id,
-            invoice_number=invoice_number,
-            client_id=client_id,
-            total_points=total_points,
-            fulfillment_method=fulfillment_method,
-            satellite_location=satellite_location if fulfillment_method == 'Satellite' else None,
-            delivery_address=delivery_address if fulfillment_method == 'Delivery' else None,
-            delivery_status='Pending' if fulfillment_method == 'Delivery' else None,
-            delivery_notes=delivery_notes if fulfillment_method == 'Delivery' and delivery_notes.strip() else None,
-            note_to_staff=note_to_staff if note_to_staff.strip() else None,
-            pickup_time=pickup_time
-        )
-        order.set_items(cart)
-        db.session.add(order)
-        
-        # Update inventory - reserve items
-        for item in cart:
-            movement_id = Counter.get_next_id()
-            new_movement = DBMovement(
-                movement_id=movement_id,
-                product_id=item['product_id'],
-                qty=item['quantity'],
-                price=0,
-                from_location='Pantry',
-                to_location='Reserved'
+        try:
+            # Create order
+            order_id = Counter.get_next_id()
+            total_points = sum(item['points'] * item['quantity'] for item in cart)
+            
+            # Generate invoice number
+            invoice_number = f"INV-{datetime.now().strftime('%Y%m%d')}-{order_id:05d}"
+            
+            # Use client's delivery address if home delivery and no custom address provided
+            if fulfillment_method == 'Delivery':
+                if not delivery_address.strip() and client.delivery_address:
+                    delivery_address = client.delivery_address
+                elif not delivery_address.strip() and client.address:
+                    delivery_address = client.address
+            
+            order = DBOrder(
+                order_id=order_id,
+                invoice_number=invoice_number,
+                client_id=client_id,
+                total_points=total_points,
+                fulfillment_method=fulfillment_method,
+                satellite_location=satellite_location if fulfillment_method == 'Satellite' else None,
+                delivery_address=delivery_address if fulfillment_method == 'Delivery' else None,
+                delivery_status='Pending' if fulfillment_method == 'Delivery' else None,
+                delivery_notes=delivery_notes if fulfillment_method == 'Delivery' and delivery_notes.strip() else None,
+                note_to_staff=note_to_staff if note_to_staff.strip() else None,
+                pickup_time=pickup_time
             )
-            db.session.add(new_movement)
+            order.set_items(cart)
+            db.session.add(order)
+            
+            # Update inventory - reserve items
+            for item in cart:
+                movement_id = Counter.get_next_id()
+                new_movement = DBMovement(
+                    movement_id=movement_id,
+                    product_id=item['product_id'],
+                    qty=item['quantity'],
+                    price=0,
+                    from_location='Pantry',
+                    to_location='Reserved'
+                )
+                db.session.add(new_movement)
+            
+            db.session.commit()
+            
+            # Clear cart
+            session['cart'] = []
+            
+            flash(f'Order #{order.order_id} placed successfully!')
+            return redirect('/shop/order-confirmation/' + str(order.order_id))
         
-        db.session.commit()
-        
-        # Clear cart
-        session['cart'] = []
-        
-        flash(f'Order #{order.order_id} placed successfully!')
-        return redirect('/shop/order-confirmation/' + str(order.order_id))
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating order: {e}")
+            flash(f'Error placing order: {str(e)}')
+            return redirect('/shop/checkout')
     
     return render_template('shop_checkout.html', client=client, cart=cart)
 
@@ -532,8 +604,15 @@ def message_staff():
         return jsonify({'success': False, 'error': 'Not logged in'})
     
     message_text = request.json.get('message', '').strip()
+    
+    # Validate message
     if not message_text:
         return jsonify({'success': False, 'error': 'Message cannot be empty'})
+    
+    # Limit message length to 2000 characters
+    MAX_MESSAGE_LENGTH = 2000
+    if len(message_text) > MAX_MESSAGE_LENGTH:
+        return jsonify({'success': False, 'error': f'Message is too long. Maximum {MAX_MESSAGE_LENGTH} characters allowed.'})
     
     message_id = Counter.get_next_id()
     new_message = StaffMessage(
@@ -548,7 +627,7 @@ def message_staff():
         return jsonify({'success': True, 'message': 'Message sent to staff!'})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)})
+        return jsonify({'success': False, 'error': 'Failed to send message. Please try again.'})
 
 
 @app.route('/staff-messages/', methods=['GET'])
@@ -559,10 +638,10 @@ def view_staff_messages():
     
     messages = StaffMessage.query.order_by(StaffMessage.created_at.desc()).all()
     
-    # Get client names
-    client_lookup = {c.client_id: c.name for c in DBClient.query.all()}
+    # Get full client info
+    clients = {c.client_id: c for c in DBClient.query.all()}
     
-    return render_template('staff_messages.html', messages=messages, client_lookup=client_lookup)
+    return render_template('staff_messages.html', messages=messages, clients=clients)
 
 
 @app.route('/staff-messages/<int:message_id>/mark-read', methods=['POST'])
@@ -801,6 +880,12 @@ def view_client_detail(client_id):
         db_client.household_size = int(request.form.get("household_size", 1))
         db_client.language = request.form.get("language", "English")
         db_client.points_per_visit = int(request.form.get("points_per_visit", 100))
+        
+        # Allergens and dietary preferences
+        allergens = request.form.getlist("allergens")
+        dietary_prefs = request.form.getlist("dietary_prefs")
+        db_client.set_allergens(allergens)
+        db_client.set_dietary_prefs(dietary_prefs)
         
         # Medical & Nutrition fields
         db_client.medical_conditions = request.form.get("medical_conditions", "")
@@ -1054,12 +1139,12 @@ def viewProduct():
 
         # Handle dietary indicators
         dietary_indicators = []
-        if request.form.get("vegan"): dietary_indicators.append("vegan")
-        if request.form.get("vegetarian"): dietary_indicators.append("vegetarian")
-        if request.form.get("gluten_free"): dietary_indicators.append("gluten-free")
-        if request.form.get("low_sodium"): dietary_indicators.append("low-sodium")
-        if request.form.get("sugar_free"): dietary_indicators.append("sugar-free")
-        if request.form.get("dairy_free"): dietary_indicators.append("dairy-free")
+        if request.form.get("vegan"): dietary_indicators.append("Vegan")
+        if request.form.get("vegetarian"): dietary_indicators.append("Vegetarian")
+        if request.form.get("gluten_free"): dietary_indicators.append("Gluten-Free")
+        if request.form.get("low_sodium"): dietary_indicators.append("Low Sodium")
+        if request.form.get("sugar_free"): dietary_indicators.append("Sugar-Free")
+        if request.form.get("dairy_free"): dietary_indicators.append("Dairy-Free")
         
         # Handle allergens
         allergens = []
@@ -1101,16 +1186,20 @@ def viewProduct():
     return render_template("products.html", products=products)
 
 
-@app.route("/update-product/<name>", methods=["POST", "GET"])
+@app.route("/update-product/<path:name>", methods=["POST", "GET"])
 def updateProduct(name):
     """Update product details"""
     if 'user_id' not in session:
         return redirect('/')
     
+    # URL decode the name in case it has special characters
+    from urllib.parse import unquote
+    name = unquote(name)
+    
     product = DBProduct.query.filter_by(product_id=name).first()
 
     if not product:
-        flash("Product not found")
+        flash(f"Product '{name}' not found")
         return redirect("/products/")
 
     old_product_id = product.product_id
@@ -1139,12 +1228,12 @@ def updateProduct(name):
 
         # Handle dietary indicators
         dietary_indicators = []
-        if request.form.get("vegan"): dietary_indicators.append("vegan")
-        if request.form.get("vegetarian"): dietary_indicators.append("vegetarian")
-        if request.form.get("gluten_free"): dietary_indicators.append("gluten-free")
-        if request.form.get("low_sodium"): dietary_indicators.append("low-sodium")
-        if request.form.get("sugar_free"): dietary_indicators.append("sugar-free")
-        if request.form.get("dairy_free"): dietary_indicators.append("dairy-free")
+        if request.form.get("vegan"): dietary_indicators.append("Vegan")
+        if request.form.get("vegetarian"): dietary_indicators.append("Vegetarian")
+        if request.form.get("gluten_free"): dietary_indicators.append("Gluten-Free")
+        if request.form.get("low_sodium"): dietary_indicators.append("Low Sodium")
+        if request.form.get("sugar_free"): dietary_indicators.append("Sugar-Free")
+        if request.form.get("dairy_free"): dietary_indicators.append("Dairy-Free")
         
         # Handle allergens
         allergens = []
@@ -1188,21 +1277,28 @@ def updateProduct(name):
     return render_template("update-product.html", product=product_proxy)
 
 
-@app.route("/delete-product/<name>")
+@app.route("/delete-product/<path:name>")
 def deleteProduct(name):
     """Deletes a product"""
     try:
+        # URL decode the name in case it has special characters
+        from urllib.parse import unquote
+        name = unquote(name)
+        
         product = DBProduct.query.filter_by(product_id=name).first()
 
         if not product:
-            return "Product not found", 404
+            flash(f"Product '{name}' not found")
+            return redirect("/products/")
 
         db.session.delete(product)
         db.session.commit()
+        flash(f"Product '{name}' deleted successfully")
         return redirect("/products/")
     except Exception as e:
         db.session.rollback()
-        return f"There was an issue while deleting the Product: {str(e)}"
+        flash(f"Error deleting product: {str(e)}")
+        return redirect("/products/")
 
 
 @app.route("/update-location/<name>", methods=["POST", "GET"])
@@ -1507,42 +1603,49 @@ def kiosk_complete():
         flash('Cart is empty')
         return redirect('/kiosk/categories')
     
-    # Create order
-    order_id = Counter.get_next_id()
-    total_points = sum(item['points'] * item['quantity'] for item in cart)
-    
-    order = DBOrder(
-        order_id=order_id,
-        client_id=client_id,
-        total_points=total_points,
-        fulfillment_method='In-Person Pickup',
-        status='Completed'
-    )
-    order.set_items(cart)
-    db.session.add(order)
-    
-    # Update inventory
-    for item in cart:
-        movement_id = Counter.get_next_id()
-        new_movement = DBMovement(
-            movement_id=movement_id,
-            product_id=item['product_id'],
-            qty=item['quantity'],
-            price=0,
-            from_location='Pantry',
-            to_location='Customer'
+    try:
+        # Create order
+        order_id = Counter.get_next_id()
+        total_points = sum(item['points'] * item['quantity'] for item in cart)
+        
+        order = DBOrder(
+            order_id=order_id,
+            client_id=client_id,
+            total_points=total_points,
+            fulfillment_method='In-Person Pickup',
+            status='Completed'
         )
-        db.session.add(new_movement)
+        order.set_items(cart)
+        db.session.add(order)
+        
+        # Update inventory
+        for item in cart:
+            movement_id = Counter.get_next_id()
+            new_movement = DBMovement(
+                movement_id=movement_id,
+                product_id=item['product_id'],
+                qty=item['quantity'],
+                price=0,
+                from_location='Pantry',
+                to_location='Customer'
+            )
+            db.session.add(new_movement)
+        
+        db.session.commit()
+        
+        # Clear session
+        session.pop('kiosk_client_id', None)
+        session.pop('kiosk_cart', None)
+        session.pop('kiosk_mode', None)
+        
+        order_proxy = OrderProxy(order)
+        return render_template('kiosk_complete.html', order=order_proxy)
     
-    db.session.commit()
-    
-    # Clear session
-    session.pop('kiosk_client_id', None)
-    session.pop('kiosk_cart', None)
-    session.pop('kiosk_mode', None)
-    
-    order_proxy = OrderProxy(order)
-    return render_template('kiosk_complete.html', order=order_proxy)
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error completing kiosk order: {e}")
+        flash(f'Error completing order: {str(e)}')
+        return redirect('/kiosk/categories')
 
 
 if __name__ == "__main__":

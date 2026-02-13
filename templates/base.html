@@ -7,12 +7,213 @@
     <link href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" rel="stylesheet" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js" crossorigin="anonymous"></script>
+    <style>
+        /* Smooth transitions for theme changes */
+        body,
+        .sb-sidenav-light,
+        .sb-sidenav-light .sb-sidenav-menu,
+        .sb-sidenav-light .nav-link,
+        .sb-sidenav-light .nav-link .sb-nav-link-icon,
+        .sb-topnav,
+        .navbar-brand,
+        #sidebarToggle,
+        .card,
+        .card-header,
+        .table,
+        .form-control,
+        .breadcrumb,
+        .breadcrumb-item a,
+        .list-group-item,
+        .alert,
+        .theme-toggle {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* Light Mode (Default) */
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        
+        .sb-sidenav-light {
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .sb-sidenav-light .sb-sidenav-menu {
+            background-color: #ffffff;
+        }
+        
+        .sb-sidenav-light .nav-link {
+            color: #495057;
+            padding: 0.75rem 1rem;
+        }
+        
+        .sb-sidenav-light .nav-link:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+        
+        .sb-sidenav-light .nav-link .sb-nav-link-icon {
+            color: #6c757d;
+            margin-right: 0.5rem;
+        }
+        
+        .sb-sidenav-light .nav-link:hover .sb-nav-link-icon {
+            color: #007bff;
+        }
+        
+        .sb-topnav {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            color: #212529 !important;
+            font-weight: 600;
+        }
+        
+        .navbar-brand:hover {
+            color: #212529 !important;
+        }
+        
+        #sidebarToggle {
+            color: #212529 !important;
+        }
+        
+        /* Dark Mode */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .sb-sidenav-light {
+            background-color: #2d2d2d;
+            border-right: 1px solid #404040;
+        }
+        
+        body.dark-mode .sb-sidenav-light .sb-sidenav-menu {
+            background-color: #2d2d2d;
+        }
+        
+        body.dark-mode .sb-sidenav-light .nav-link {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .sb-sidenav-light .nav-link:hover {
+            background-color: #404040;
+            color: #4da3ff;
+        }
+        
+        body.dark-mode .sb-sidenav-light .nav-link .sb-nav-link-icon {
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode .sb-sidenav-light .nav-link:hover .sb-nav-link-icon {
+            color: #4da3ff;
+        }
+        
+        body.dark-mode .sb-topnav {
+            background-color: #2d2d2d !important;
+            border-bottom: 1px solid #404040;
+        }
+        
+        body.dark-mode .navbar-brand {
+            color: #e0e0e0 !important;
+        }
+        
+        body.dark-mode .navbar-brand:hover {
+            color: #e0e0e0 !important;
+        }
+        
+        body.dark-mode #sidebarToggle {
+            color: #e0e0e0 !important;
+        }
+        
+        body.dark-mode .card {
+            background-color: #2d2d2d;
+            border-color: #404040;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .card-header {
+            background-color: #363636;
+            border-color: #404040;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .table {
+            color: #e0e0e0;
+            background-color: #2d2d2d;
+        }
+        
+        body.dark-mode .table-bordered td,
+        body.dark-mode .table-bordered th {
+            border-color: #404040;
+        }
+        
+        body.dark-mode .form-control {
+            background-color: #363636;
+            border-color: #404040;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .form-control:focus {
+            background-color: #404040;
+            border-color: #4da3ff;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .breadcrumb {
+            background-color: #2d2d2d;
+        }
+        
+        body.dark-mode .breadcrumb-item a {
+            color: #4da3ff;
+        }
+        
+        body.dark-mode .list-group-item {
+            background-color: #2d2d2d;
+            border-color: #404040;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .alert {
+            background-color: #363636;
+            border-color: #404040;
+            color: #e0e0e0;
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            color: #6c757d;
+        }
+        
+        .theme-toggle:hover {
+            color: #007bff;
+        }
+        
+        body.dark-mode .theme-toggle {
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode .theme-toggle:hover {
+            color: #4da3ff;
+        }
+    </style>
 </head>
 <body class="sb-nav-fixed">
-    <nav class="sb-topnav navbar navbar-expand navbar- bg-warning">
+    <nav class="sb-topnav navbar navbar-expand">
         <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fas fa-bars"></i></button>
         <a class="navbar-brand" href="/home">Poverello Ordering System</a>
-        <div class="ml-auto">
+        <div class="ml-auto d-flex align-items-center">
+            <span class="theme-toggle mr-3" onclick="toggleTheme()" title="Toggle Dark Mode">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </span>
             <a href="/shop" class="btn btn-sm btn-primary mr-2">Client Portal</a>
             <a href="/kiosk" class="btn btn-sm btn-info mr-2">Kiosk Mode</a>
             <a href="/logout" class="btn btn-sm btn-danger">Logout</a>
@@ -20,7 +221,7 @@
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <nav class="sb-sidenav accordion sb-sidenav-light" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
                         <a class="nav-link" href="/home">
@@ -71,8 +272,8 @@
             {% block content %}
             {% endblock %}
             <footer style="text-align: center; padding: 20px 0 10px 0; margin-top: 40px;">
-                <p style="font-size: 9px; color: #ccc; margin: 0;">
-                    Made by <a href="https://github.com/Andrey199123/Storefront" target="_blank" style="color: #ccc; text-decoration: none;">Andrey Vasilyev</a>
+                <p style="font-size: 9px; color: #999; margin: 0;">
+                    Made by <a href="https://github.com/Andrey199123/Storefront" target="_blank" style="color: #999; text-decoration: none;">Andrey Vasilyev</a>
                 </p>
             </footer>
         </div>
@@ -83,5 +284,36 @@
     <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='js/datatables-demo.js')}}"></script>
     <script src="{{ url_for('static', filename='js/script.js')}}"></script>
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark-mode');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Load saved theme preference
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const icon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        });
+    </script>
 </body>
 </html>
