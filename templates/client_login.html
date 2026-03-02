@@ -95,14 +95,6 @@
             <p>Food Pantry Shopping</p>
         </div>
         
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
         <form action="/shop/login" method="POST">
             <div class="form-group">
                 <label for="client_id">Client ID:</label>

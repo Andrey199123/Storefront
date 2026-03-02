@@ -174,6 +174,8 @@ def logout():
 @app.route('/shop', methods=['GET'])
 def client_shop_login():
     """Client login page for shopping"""
+    # Clear any old flash messages
+    session.pop('_flashes', None)
     return render_template('client_login.html')
 
 
@@ -949,6 +951,11 @@ def view_orders():
     db_clients = DBClient.query.all()
     client_lookup = {c.client_id: c.name for c in db_clients}
     
+    # Debug: print to console
+    print(f"DEBUG: Found {len(orders)} orders")
+    for order in orders[:3]:
+        print(f"  Order {order.order_id}: {order.client_id}, {len(order.items)} items")
+    
     return render_template("orders.html", orders=orders, client_lookup=client_lookup)
 
 
@@ -1546,6 +1553,8 @@ def getPDuplicate():
 @app.route('/kiosk', methods=['GET'])
 def kiosk_mode():
     """Kiosk shopping interface"""
+    # Clear any old flash messages
+    session.pop('_flashes', None)
     return render_template('kiosk_login.html')
 
 

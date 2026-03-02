@@ -11,7 +11,38 @@
             }
             body {
                 margin: 0;
-                padding: 20px;
+                padding: 15px;
+            }
+            @page {
+                size: letter;
+                margin: 0.5in;
+            }
+            /* Prevent page breaks inside elements */
+            .invoice-header,
+            .parties,
+            .party-box,
+            .notes-section,
+            .items-table,
+            .totals {
+                page-break-inside: avoid;
+            }
+            /* Reduce spacing for print */
+            .invoice-header {
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+            }
+            .parties {
+                margin-bottom: 15px;
+            }
+            .items-table {
+                margin-bottom: 15px;
+            }
+            .notes-section {
+                margin-bottom: 15px;
+                padding: 10px;
+            }
+            .footer {
+                padding-top: 15px;
             }
         }
         
@@ -214,9 +245,8 @@
     <div class="invoice-header">
         <div class="company-info">
             <h1>Poverello Food Pantry</h1>
-            <p>[Your Address]</p>
-            <p>[Your Phone] | [Your Email]</p>
-            <p>Tax ID: [Your Tax ID]</p>
+            <p>540 W McNab Rd, Pompano Beach, FL</p>
+            <p>(954) 561-3663 | tpietrogallo@poverello.org</p>
         </div>
         <div class="invoice-details">
             <h2>INVOICE</h2>

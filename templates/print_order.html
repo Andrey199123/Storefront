@@ -11,7 +11,39 @@
             }
             body {
                 margin: 0;
-                padding: 20px;
+                padding: 15px;
+            }
+            @page {
+                size: letter;
+                margin: 0.5in;
+            }
+            /* Prevent page breaks inside elements */
+            .header,
+            .order-info,
+            .info-section,
+            .note-section,
+            .items-table,
+            .footer {
+                page-break-inside: avoid;
+            }
+            /* Reduce spacing for print */
+            .header {
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+            }
+            .order-info {
+                margin-bottom: 15px;
+                padding: 15px;
+            }
+            .items-table {
+                margin-bottom: 15px;
+            }
+            .note-section {
+                margin-bottom: 15px;
+                padding: 10px;
+            }
+            .footer {
+                padding-top: 15px;
             }
         }
         

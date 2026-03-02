@@ -137,6 +137,16 @@
             <p>Review your order and select fulfillment method</p>
         </div>
         
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="padding: 15px; margin-bottom: 20px; background: #f8d7da; color: #721c24; border-radius: 8px; border-left: 4px solid #dc3545;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
         <div class="order-summary">
             <h3>Order Summary</h3>
             {% for item in cart %}
@@ -253,14 +263,14 @@
             
             <div class="form-group">
                 <label>Preferred Pickup/Delivery Date & Time:</label>
-                <div style="display: flex; gap: 15px;">
-                    <div style="flex: 1;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
                         <label for="pickup_date" style="font-weight: normal; font-size: 14px;">Date</label>
-                        <input type="date" id="pickup_date" name="pickup_date" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px;">
+                        <input type="date" id="pickup_date" name="pickup_date" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; box-sizing: border-box;">
                     </div>
-                    <div style="flex: 1;">
+                    <div>
                         <label for="pickup_time_only" style="font-weight: normal; font-size: 14px;">Time</label>
-                        <select id="pickup_time_only" name="pickup_time_only" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px;">
+                        <select id="pickup_time_only" name="pickup_time_only" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 16px; box-sizing: border-box;">
                             <option value="">-- Select time --</option>
                             <option value="08:00">8:00 AM</option>
                             <option value="08:30">8:30 AM</option>
