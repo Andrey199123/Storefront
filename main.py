@@ -122,6 +122,10 @@ class OrderProxy:
         self.completed_at = db_order.completed_at
 
 
+# Demo mode: when True, the staff login is bypassed (seeded sample data only).
+DEMO_MODE = True
+
+
 @app.route('/', methods=['GET', 'POST'])
 def login_register():
     if request.method == 'POST':
@@ -158,6 +162,10 @@ def login_register():
                 flash('Registration successful. Please login.')
                 return redirect('/')
 
+    if DEMO_MODE:
+        session['user_id'] = 'admin'
+        session['user_role'] = 'admin'
+        return redirect('/home')
     return render_template('login.html')
 
 
