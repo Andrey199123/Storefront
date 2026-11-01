@@ -4,6 +4,10 @@ An ordering and inventory system we built for the Poverello food pantry. Clients
 
 ![Staff dashboard](docs/screenshots/staff-dashboard.png)
 
+[Explore the public demo](https://poverello.vercel.app)
+
+**Public demo vs. live system:** the operational app is deployed separately and requires authentication. The public demo lets visitors explore the interface without access to that deployment. This is a team project, not a claim of sole authorship.
+
 ## What it does
 
 **For clients**
@@ -34,8 +38,10 @@ Python, Flask, SQLAlchemy, SQLite, and Bootstrap (MDB).
 ## Running it locally
 
 ```bash
-git clone https://github.com/Andrey199123/poverello-pantry.git
-cd poverello-pantry
+git clone https://github.com/Andrey199123/Storefront.git
+cd Storefront
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env    # then set SECRET_KEY
 python3 setup_sample_data_sql.py
@@ -48,7 +54,7 @@ Then open:
 - Client shop: http://127.0.0.1:5000/shop
 - Kiosk: http://127.0.0.1:5000/kiosk
 
-The sample data includes test clients `C10001` and `C10002`. Demo mode is on (`DEMO_MODE` in `main.py`), which skips the staff login so the dashboard can be shown with sample data. Turn it off before using real client data. The staff login with demo mode off is `admin` / `admin123`.
+The sample data includes test clients `C10001` and `C10002`. Demo mode (`DEMO_MODE` in `main.py`) skips staff login. Use synthetic records only. Before any operational deployment, disable demo mode, replace development credentials, set a strong secret, and review authentication, authorization, and database handling. This public demo configuration is not production-ready.
 
 `backup_database.py` backs up the database and product images. See [BACKUP_INSTRUCTIONS.md](BACKUP_INSTRUCTIONS.md).
 
