@@ -8,6 +8,8 @@ An ordering and inventory system we built for the Poverello food pantry. Clients
 
 **Public demo vs. live system:** the operational app is deployed separately and requires authentication. The public demo lets visitors explore the interface without access to that deployment. This is a team project, not a claim of sole authorship.
 
+The repository does not include a database export or operational records. The public demo and local sample-data scripts use separate synthetic data.
+
 ## What it does
 
 **For clients**

@@ -165,7 +165,9 @@ def login_register():
     if DEMO_MODE:
         session['user_id'] = 'admin'
         session['user_role'] = 'admin'
-        return redirect('/home')
+        # Render the dashboard in the same request so the public demo does not
+        # depend on a session cookie surviving a redirect.
+        return index()
     return render_template('login.html')
 
 
